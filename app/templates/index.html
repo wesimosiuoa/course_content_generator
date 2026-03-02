@@ -1,0 +1,154 @@
+{% include "header.html" %}
+
+<style>
+.hero {
+    background: linear-gradient(135deg, #0f172a, #1e3a8a);
+    color: white;
+    padding: 120px 0;
+}
+
+.section-padding {
+    padding: 90px 0;
+}
+
+.feature-card {
+    border-radius: 15px;
+    padding: 30px;
+    transition: 0.3s ease;
+    background: white;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+</style>
+
+<!-- HERO -->
+<section class="hero text-center">
+<div class="container">
+    <h1 class="display-4 fw-bold">
+        Personalized Course Generation Powered by AI
+    </h1>
+
+    <p class="lead mt-4">
+        Tell us what you want to learn. We analyze your preferences and generate a course tailored specifically to you.
+    </p>
+
+    <div class="mt-5">
+        <a href="/preferences" class="btn btn-light btn-lg me-3">
+            Start Learning
+        </a>
+        <a href="/login" class="btn btn-outline-light btn-lg">
+            Login
+        </a>
+    </div>
+</div>
+</section>
+
+<!-- PERSONALIZATION EXPLANATION -->
+<section class="section-padding bg-light">
+<div class="container text-center">
+
+    <h2 class="fw-bold mb-5">How Personalization Works</h2>
+
+    <div class="row">
+
+        <div class="col-md-4 mb-4">
+            <div class="feature-card shadow-sm">
+                <h5>1. Share Preferences</h5>
+                <p>
+                    Select topics, learning goals, difficulty level, and study duration.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="feature-card shadow-sm">
+                <h5>2. AI Generates Custom Course</h5>
+                <p>
+                    The system analyzes your inputs and generates a structured personalized course.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="feature-card shadow-sm">
+                <h5>3. Feedback Loop</h5>
+                <p>
+                    Like or dislike the generated course. The system refines future recommendations.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+</section>
+
+<!-- SYSTEM FEATURES -->
+<section class="section-padding">
+<div class="container text-center">
+
+    <h2 class="fw-bold mb-5">What Your Personalized Course Includes</h2>
+
+    <div class="row">
+
+        <div class="col-md-4 mb-4">
+            <div class="feature-card shadow-sm">
+                <h5>Structured Outline</h5>
+                <p>Modules aligned with your goals and knowledge level.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="feature-card shadow-sm">
+                <h5>Interactive Notes</h5>
+                <p>Clear explanations with examples tailored to your preferences.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="feature-card shadow-sm">
+                <h5>Assessments</h5>
+                <p>Quizzes and tasks adapted to your learning progress.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="feature-card shadow-sm">
+                <h5>Slides & Media</h5>
+                <p>Visual learning materials generated dynamically.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="feature-card shadow-sm">
+                <h5>Adaptive Refinement</h5>
+                <p>System improves content based on your interaction behavior.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="feature-card shadow-sm">
+                <h5>Secure Access</h5>
+                <p>Login to access, track, and manage your personalized courses.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+</section>
+
+<!-- CALL TO ACTION -->
+<section class="hero text-center">
+<div class="container">
+    <h2 class="fw-bold">
+        Your Learning Journey Starts with Your Preferences
+    </h2>
+    <a href="/preferences" class="btn btn-light btn-lg mt-4">
+        Generate My Personalized Course
+    </a>
+</div>
+</section>
+
+{% include "footer.html" %}

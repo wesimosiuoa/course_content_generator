@@ -1,0 +1,143 @@
+
+{% extends "student/dashboard_base.html" %}
+{% block content %}
+
+
+<style>
+.preference-wrapper {
+    min-height: 100vh;
+    background: #f4f6f9;
+    padding: 60px 0;
+}
+
+.preference-card {
+    max-width: 850px;
+    margin: auto;
+    border-radius: 18px;
+}
+
+.section-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+    color: #1e3a8a;
+}
+
+.compact-group {
+    margin-bottom: 18px;
+}
+</style>
+
+<div class="preference-wrapper">
+<div class="container">
+
+    <div class="card shadow preference-card">
+        <div class="card-body p-4">
+
+            <h3 class="text-center mb-2">
+                Personalized Course Configuration
+            </h3>
+            <p class="text-center text-muted mb-4">
+                The system will generate a complete course package tailored to your preferences.
+            </p>
+
+            <form method="POST">
+
+                <!-- DOMAIN -->
+                <div class="compact-group">
+                    <label class="section-title">Domain</label>
+                    <select name="domain" class="form-select" required>
+                        <option value="">Select Domain</option>
+                        <option>Software Engineering</option>
+                        <option>Computer Engineering</option>
+                        <option>Network Engineering</option>
+                        <option>Education & Training</option>
+                        <option>Communication & Study Skills</option>
+                        <option>Entrepreneurship</option>
+                    </select>
+                </div>
+
+                <!-- TOPIC -->
+                <div class="compact-group">
+                    <label class="section-title">Course Topic</label>
+                    <input type="text" name="topic" class="form-control"
+                           placeholder="e.g., Agile Development, Network Security"
+                           required>
+                </div>
+
+                <div class="row">
+
+                    <!-- GOAL -->
+                    <div class="col-md-6 compact-group">
+                        <label class="section-title">Learning Objective</label>
+                        <select name="goal" class="form-select">
+                            <option>Foundational Understanding</option>
+                            <option>Professional Skill Development</option>
+                            <option>Research Preparation</option>
+                            <option>Certification / Exam Preparation</option>
+                            <option>Entrepreneurial Application</option>
+                        </select>
+                    </div>
+
+                    <!-- LEVEL -->
+                    <div class="col-md-6 compact-group">
+                        <label class="section-title">Complexity Level</label>
+                        <select name="level" class="form-select">
+                            <option>Beginner</option>
+                            <option>Intermediate</option>
+                            <option>Advanced</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <!-- DURATION -->
+                    <div class="col-md-6 compact-group">
+                        <label class="section-title">Study Duration (Weeks)</label>
+                        <input type="number" name="duration"
+                               min="1" max="24"
+                               class="form-control"
+                               placeholder="e.g., 6">
+                    </div>
+
+                    <!-- LEARNING PREFERENCE -->
+                    <div class="col-md-6 compact-group">
+                        <label class="section-title">
+                            Learning Preference (Affects Emphasis)
+                        </label>
+                        <select name="learning_preference" class="form-select">
+                            <option>Theory-Oriented</option>
+                            <option>Practice-Oriented</option>
+                            <option>Visual & Conceptual</option>
+                            <option>Balanced Approach</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <!-- PRIOR KNOWLEDGE -->
+                <div class="compact-group">
+                    <label class="section-title">Prior Knowledge (Optional)</label>
+                    <textarea name="prior_knowledge"
+                              rows="2"
+                              class="form-control"
+                              placeholder="Briefly describe your background..."></textarea>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary px-4">
+                        Save Preferences
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+</div>
+
+{% endblock %}

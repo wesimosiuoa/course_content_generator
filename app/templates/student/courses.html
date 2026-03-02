@@ -1,0 +1,51 @@
+
+{% extends "student/dashboard_base.html" %}
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">My Courses</h1>
+    <p class="lead">Here are the courses you are currently enrolled in.</p>
+
+    <div class="row">
+        {% for course in courses %}
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{{ course.title }}</h5>
+                    <p class="card-text">{{ course.overview | tojson(indent=2) }}</p> 
+
+                    <div class="info d-flex align-items-center gap-3 flex-wrap">
+
+                                    {% if not enrolled %}
+                                        <a href="/enroll_course/{{ course.id }}"
+                                        class="btn btn-custom btn-sm">
+                                            Enroll
+                                        </a>
+                                    
+                                        
+                                    {% endif %}
+
+                                    {% if reaction %}
+                                        {% if reaction == 'like' %}
+                                            <span class="small text">
+                                                <i class="fas fa-thumbs-up"></i> Liked
+                                            </span>
+                                        {% elif reaction == 'dislike' %}
+                                            <span class="small text-danger">
+                                                <i class="fas fa-thumbs-down"></i> Disliked
+                                            </span>
+                                        {% endif %}
+                                    {% endif %}
+
+                                </div>
+
+                </div>
+                <a href="/view_my_course/{{ course.id }}" class="btn btn-primary-custom">Go to Course</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <p class="text-muted">You are not enrolled in any courses yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>{% endblock %}

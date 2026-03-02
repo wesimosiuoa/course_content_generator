@@ -1,0 +1,185 @@
+{% extends "student/dashboard_base.html" %}
+{% block content %}
+
+<div class="container">
+
+
+    <!-- 🚀 Empty State (Future: Generate Course) -->
+    {% if request.args.get('query') and not search_results %}
+        <div class="alert alert-warning shadow-sm">
+            <h6 class="fw-semibold mb-2">
+                🚀 No courses found for "{{ request.args.get('query') }}"
+            </h6>
+
+            <p class="text-muted small mb-3">
+                We couldn't find this topic.
+                Based on your learning history, we can create a personalized course tailored to your level.
+            </p>
+
+            <a href="/generate_course?topic={{ request.args.get('query') }}"
+               class="btn btn-primary">
+                Generate Course
+            </a>
+        </div>
+    {% endif %}
+    <!-- 🔎 Search Section -->
+    <div class="mb-4">
+        
+        <form method="GET" action="/discover">
+            
+            <div class="input-group shadow-sm">
+                <input type="text"
+                       name="query"
+                       class="form-control"
+                       placeholder="Search for courses, domains, skills..."
+                       value="{{ request.args.get('query', '') }}">
+                <button class="btn btn-primary px-4">
+                    Search
+                </button>
+            </div>
+        </form>
+    </div>
+
+
+    <!-- 🔍 Search Results -->
+    {% if search_results %}
+        <div class="mb-5">
+            <h5 class="fw-semibold mb-3">
+                🔍 Search Results
+            </h5>
+
+            <div class="row g-3">
+                {% for course in search_results %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body">
+
+                                <h6 class="fw-semibold">
+                                    {{ course.title }}
+                                </h6>
+
+                                <p class="small text-muted">
+                                    {{ course.content.overview if course.content }}
+                                </p>
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-light text-dark border">
+                                        {{ course.level }}
+                                    </span>
+                                    <a href="view_my_course/{{ course.id }}"
+                                       class="btn btn-sm btn-outline-primary">
+                                        View
+                                    </a>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+
+    <!-- 🌟 Recommended Section -->
+    {% if recommended_courses %}
+        <div class="mb-5">
+            <h5 class="fw-semibold mb-3">
+                🌟Recommended For You
+            </h5>
+
+            <div class="row g-3">
+                {% for course in recommended_courses %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body">
+
+                                <h6 class="fw-semibold">
+                                    {{ course.title }}
+                                </h6>
+
+                                <p class="small text-muted">
+                                    {{ course.content.overview if course.content }}
+                                </p>
+
+                                <a href="/view_my_course/{{ course.id }}"
+                                   class="btn btn-sm btn-primary w-100">
+                                    Explore
+                                </a>
+
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+
+    <!-- 📈 Trending Section -->
+    {% if trending_courses %}
+        <div class="mb-5">
+            <h5 class="fw-semibold mb-3">
+                📈 Trending Courses
+            </h5>
+
+            <div class="row g-3">
+                {% for course in trending_courses %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body">
+
+                                <h6 class="fw-semibold">
+                                    {{ course.title }}
+                                </h6>
+
+                                <p class="small text-muted">
+                                    Popularity: {{ course.popularity_score }}
+                                </p>
+                                <div class="info d-flex align-items-center gap-3 flex-wrap">
+
+                                    {% if not enrolled %}
+                                        <a href="/enroll_course/{{ course.id }}"
+                                        class="btn btn-custom btn-sm">
+                                            Enroll
+                                        </a>
+                                    {% else %}
+                                        <span class="text small">
+                                            <i class="fas fa-check-circle"></i> Enrolled
+                                        </span>
+                                    {% endif %}
+
+                                    {% if reaction %}
+                                        {% if reaction == 'like' %}
+                                            <span class="small text">
+                                                <i class="fas fa-thumbs-up"></i> Liked
+                                            </span>
+                                        {% elif reaction == 'dislike' %}
+                                            <span class="small text-danger">
+                                                <i class="fas fa-thumbs-down"></i> Disliked
+                                            </span>
+                                        {% endif %}
+                                    {% endif %}
+
+                                </div>
+                                
+                                <a href="/view_my_course/{{ course.id }}"
+                                   class="btn btn-sm btn-outline-dark w-100">
+                                    View Course
+                                </a>
+                                
+
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+
+
+
+</div>
+
+{% endblock %}

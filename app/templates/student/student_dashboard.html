@@ -1,0 +1,38 @@
+{% extends "student/dashboard_base.html" %}
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">Welcome, {{ full_name }}!</h1>
+    <p class="lead">This is your student dashboard where you can access your courses, view progress, and manage your account.</p>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">My Courses</h5>
+                    <p class="card-text">View and manage the courses you are enrolled in.</p>
+                    <a href="/my_courses" class="btn btn-primary-custom">Go to My Courses</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Discover</h5>
+                    <p class="card-text">Explore new courses and content tailored to your interests.</p>
+                    <a href="/discover" class="btn btn-primary-custom">Discover Courses</a>
+                </div>
+            </div>  
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title
+                    ">Progress</h5>
+                    <p class="card-text">Track your learning progress and achievements.</p>
+                    <a href="#" class="btn btn-primary-custom">View Progress</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

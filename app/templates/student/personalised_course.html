@@ -1,0 +1,12 @@
+{% extends "student/dashboard_base.html" %}
+{% block content %}
+    <div class="container">
+        <h2> Here is your a course based on your profile </h2>
+
+        {% if user_preferences %}
+            <h6> Preferences found </h6>
+        {% else %}
+            <h6> Preferences not found </h6>
+        {% endif %}
+    </div>
+{% endblock %}
