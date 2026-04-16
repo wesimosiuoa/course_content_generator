@@ -1,0 +1,57 @@
+{% extends "student/dashboard_base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <h1 class="mb-4">Loader Test Page</h1>
+            <p class="lead mb-4">Click the buttons below to test the loading animation:</p>
+            
+            <div class="d-grid gap-3 d-flex justify-content-center">
+                <button onclick="showLoader('Testing loader... This is a test message.')" 
+                        class="btn btn-primary btn-lg">
+                    <i class="fa-solid fa-spinner me-2"></i>
+                    Test Loader (Default Message)
+                </button>
+                
+                <button onclick="showLoader('Generating comprehensive lesson notes with AI... This may take a moment.')" 
+                        class="btn btn-success btn-lg">
+                    <i class="fa-solid fa-file-word me-2"></i>
+                    Test Loader (Notes Message)
+                </button>
+                
+                <button onclick="showLoader('Creating your personalized course pathway...')" 
+                        class="btn btn-info btn-lg text-white">
+                    <i class="fa-solid fa-layer-group me-2"></i>
+                    Test Loader (Course Message)
+                </button>
+                
+                <button onclick="hideLoader()" 
+                        class="btn btn-secondary btn-lg">
+                    <i class="fa-solid fa-stop me-2"></i>
+                    Hide Loader
+                </button>
+            </div>
+            
+            <div class="alert alert-info mt-5">
+                <strong><i class="fa-solid fa-circle-info me-2"></i>How to test:</strong>
+                <ol class="text-start mt-2">
+                    <li>Click any of the colored buttons above</li>
+                    <li>You should see a full-screen overlay appear</li>
+                    <li>A large blue spinner should be in the center</li>
+                    <li>The text should pulse gently</li>
+                    <li>Click "Hide Loader" to dismiss it</li>
+                </ol>
+            </div>
+            
+            <div class="mt-4">
+                <a href="/my_courses" class="btn btn-outline-secondary">
+                    <i class="fa-solid fa-arrow-left me-2"></i>
+                    Back to My Courses
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

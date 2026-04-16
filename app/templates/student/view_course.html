@@ -1,38 +1,680 @@
 {% extends "student/dashboard_base.html" %}
 {% block content %}
 
+<style>
+/* Advanced Modern UI Design System */
+:root {
+    --primary: #4f46e5;
+    --primary-dark: #4338ca;
+    --primary-light: #eef2ff;
+    --primary-glow: rgba(79, 70, 229, 0.2);
+    --success: #10b981;
+    --success-light: #d1fae5;
+    --danger: #ef4444;
+    --danger-light: #fee2e2;
+    --warning: #f59e0b;
+    --warning-light: #fed7aa;
+    --info: #3b82f6;
+    --info-light: #dbeafe;
+    --purple: #8b5cf6;
+    --purple-light: #ede9fe;
+    --teal: #14b8a6;
+    --teal-light: #ccfbf1;
+    --dark: #0f172a;
+    --gray: #475569;
+    --light: #f8fafc;
+    --border: #e2e8f0;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Animations */
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+/* Course Hero Section - Premium */
+.course-hero {
+    background: linear-gradient(135deg, var(--primary-light) 0%, #ffffff 100%);
+    border-radius: 32px;
+    padding: 40px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(79, 70, 229, 0.2);
+    box-shadow: var(--shadow-lg);
+}
+
+.course-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.course-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(79, 70, 229, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.course-title {
+    font-weight: 800;
+    font-size: 2rem;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    z-index: 1;
+}
+
+.course-meta {
+    font-size: 0.85rem;
+    position: relative;
+    z-index: 1;
+}
+
+.enrollment-badge {
+    animation: slideInDown 0.5s ease-out;
+    background: linear-gradient(135deg, var(--success), #059669);
+    border: none;
+    color: white;
+}
+
+/* Module Cards - Advanced */
+.module-card {
+    border-radius: 24px;
+    overflow: hidden;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    margin-bottom: 1.5rem;
+    background: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.module-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-xl);
+}
+
+.accordion-button {
+    background: white;
+    font-weight: 700;
+    padding: 1.35rem 1.75rem;
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+}
+
+.accordion-button:not(.collapsed) {
+    background: linear-gradient(135deg, #fef9e8, white);
+    color: var(--primary);
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: transparent;
+}
+
+.accordion-button::after {
+    transition: transform 0.3s ease;
+}
+
+.accordion-body {
+    background: linear-gradient(135deg, #fefefe, #fafcff);
+    padding: 1.75rem;
+}
+
+/* Lesson Item - Elegant */
+.lesson-item {
+    margin-bottom: 2rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 2px solid #f1f5f9;
+    transition: all 0.3s ease;
+}
+
+.lesson-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.lesson-title {
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: var(--dark);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.lesson-title i {
+    color: var(--primary);
+    font-size: 0.75rem;
+}
+
+.lesson-content {
+    font-size: 0.9rem;
+    color: var(--gray);
+    margin-bottom: 1.25rem;
+    line-height: 1.6;
+}
+
+/* Content Groups - Premium Cards */
+.content-group {
+    background: white;
+    border-radius: 20px;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border);
+    position: relative;
+}
+
+.content-group::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--purple));
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.content-group:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: transparent;
+}
+
+.content-group:hover::before {
+    transform: scaleX(1);
+}
+
+.content-group-header {
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    background: linear-gradient(135deg, #fafcff, white);
+    border-bottom: 2px solid var(--border);
+}
+
+.content-group-header i {
+    font-size: 1.25rem;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.content-group-header h5 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--dark);
+    letter-spacing: -0.2px;
+}
+
+.content-group-body {
+    padding: 1.25rem 1.5rem;
+}
+
+/* Group-specific premium colors */
+.notes-group .content-group-header {
+    border-bottom-color: var(--primary-light);
+}
+.notes-group .content-group-header i {
+    background: linear-gradient(135deg, var(--primary-light), #ffffff);
+    color: var(--primary);
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.15);
+}
+
+.slides-group .content-group-header {
+    border-bottom-color: var(--danger-light);
+}
+.slides-group .content-group-header i {
+    background: linear-gradient(135deg, var(--danger-light), #ffffff);
+    color: var(--danger);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+}
+
+.video-group .content-group-header {
+    border-bottom-color: var(--teal-light);
+}
+.video-group .content-group-header i {
+    background: linear-gradient(135deg, var(--teal-light), #ffffff);
+    color: var(--teal);
+    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.15);
+}
+
+.assessment-group .content-group-header {
+    border-bottom-color: var(--warning-light);
+}
+.assessment-group .content-group-header i {
+    background: linear-gradient(135deg, var(--warning-light), #ffffff);
+    color: var(--warning);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+}
+
+/* Button Grid - Modern Layout */
+.action-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.action-grid .btn {
+    flex: 1 1 auto;
+    min-width: 125px;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 14px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: -0.2px;
+}
+
+.action-grid .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.action-grid .btn:active {
+    transform: translateY(0);
+}
+
+/* Button Variants */
+.btn-outline-primary {
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    background: white;
+}
+
+.btn-outline-primary:hover {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border-color: transparent;
+}
+
+.btn-outline-danger {
+    border: 2px solid var(--danger);
+    color: var(--danger);
+}
+
+.btn-outline-danger:hover {
+    background: linear-gradient(135deg, var(--danger), #dc2626);
+    color: white;
+    border-color: transparent;
+}
+
+.btn-outline-info {
+    border: 2px solid var(--info);
+    color: var(--info);
+}
+
+.btn-outline-info:hover {
+    background: linear-gradient(135deg, var(--info), #2563eb);
+    color: white;
+    border-color: transparent;
+}
+
+.btn-outline-success {
+    border: 2px solid var(--success);
+    color: var(--success);
+}
+
+.btn-outline-success:hover {
+    background: linear-gradient(135deg, var(--success), #059669);
+    color: white;
+    border-color: transparent;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--teal), #0d9488);
+    border: none;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--warning), #ea580c);
+    border: none;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, #ea580c, #c2410c);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #64748b, #475569);
+    border: none;
+    color: white;
+    opacity: 0.7;
+}
+
+/* Badge Styles - Premium */
+.lesson-badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.85rem;
+    border-radius: 30px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: -0.2px;
+}
+
+.badge-video {
+    background: linear-gradient(135deg, var(--teal-light), #99f6e4);
+    color: var(--teal);
+    border: 1px solid rgba(20, 184, 166, 0.3);
+}
+
+.badge-quiz {
+    background: linear-gradient(135deg, var(--warning-light), #fed7aa);
+    color: var(--warning);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Status Message */
+.status-message {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.5rem 1rem;
+    background: var(--light);
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--gray);
+    border: 1px solid var(--border);
+}
+
+/* Module Badge */
+.module-badge {
+    background: linear-gradient(135deg, var(--primary-light), #ffffff);
+    color: var(--primary);
+    padding: 0.25rem 0.85rem;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-left: 0.75rem;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .course-hero {
+        padding: 30px;
+    }
+    
+    .course-title {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .course-hero {
+        padding: 24px;
+        margin-bottom: 30px;
+    }
+    
+    .course-title {
+        font-size: 1.5rem;
+    }
+    
+    .accordion-button {
+        padding: 1rem 1.25rem;
+        font-size: 0.95rem;
+    }
+    
+    .accordion-body {
+        padding: 1.25rem;
+    }
+    
+    .action-grid {
+        flex-direction: column;
+    }
+    
+    .action-grid .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .content-group-header {
+        padding: 0.85rem 1.25rem;
+    }
+    
+    .content-group-body {
+        padding: 1rem 1.25rem;
+    }
+    
+    .content-group-header i {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+    }
+    
+    .content-group-header h5 {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .course-hero {
+        padding: 20px;
+    }
+    
+    .course-title {
+        font-size: 1.3rem;
+    }
+    
+    .lesson-title {
+        font-size: 0.95rem;
+    }
+    
+    .lesson-content {
+        font-size: 0.85rem;
+    }
+    
+    .content-group-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .content-group-body {
+        padding: 0.875rem 1rem;
+    }
+    
+    .action-grid .btn {
+        padding: 0.55rem 1rem;
+        font-size: 0.8rem;
+        min-width: auto;
+    }
+    
+    .lesson-badge {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.7rem;
+    }
+}
+
+/* Loading Animation */
+.loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeInUp 0.3s ease;
+}
+
+.loader-content {
+    background: white;
+    padding: 2rem 2.5rem;
+    border-radius: 32px;
+    text-align: center;
+    box-shadow: var(--shadow-xl);
+    animation: pulse 1.5s ease infinite;
+}
+
+.loader-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Hover Effects */
+.lesson-item {
+    transition: all 0.3s ease;
+}
+
+.lesson-item:hover .lesson-title {
+    color: var(--primary);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-light);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+</style>
+
 <div class="container">
 
-    <!-- Course Header -->
-    <div class="mb-4">
+    <!-- Course Header - Premium -->
+    <div class="course-hero shadow-sm">
 
-        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
 
             <div class="flex-grow-1">
-                <h2 class="fw-semibold mb-2">
+
+                <h2 class="course-title mb-3">
+                    <i class="fa-solid fa-graduation-cap me-2" style="background: linear-gradient(135deg, var(--primary), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
                     {{ course.title }}
                 </h2>
-                <div class="info d-flex align-items-center gap-3 flex-wrap">
+
+                <div class="course-meta d-flex align-items-center gap-3 flex-wrap mb-2">
 
                     {% if not enrolled %}
                         <a href="/enroll_course/{{ course.id }}"
-                        class="btn btn-custom btn-sm">
-                            Enroll
+                           class="btn btn-outline-success btn-sm fw-semibold"
+                           style="border-radius: 30px; padding: 0.5rem 1.25rem;">
+                            <i class="fa-solid fa-user-plus me-1"></i>
+                            Enroll Now
                         </a>
                     {% else %}
-                        <span class="text small">
-                            <i class="fas fa-check-circle"></i> Enrolled
-                        </span>
+                        <div class="enrollment-badge alert alert-success d-inline-flex align-items-center mb-0 p-2" 
+                             role="alert" 
+                             style="font-size: 0.9rem; border-radius: 30px;">
+                            <i class="fa-solid fa-circle-check me-2 fs-6"></i>
+                            <span class="fw-semibold">✓ You are enrolled in this course</span>
+                        </div>
                     {% endif %}
 
                     {% if reaction %}
                         {% if reaction == 'like' %}
-                            <span class="small text">
-                                <i class="fas fa-thumbs-up"></i> Liked
+                            <span class="status-message">
+                                <i class="fa-solid fa-thumbs-up text-primary"></i>
+                                Liked
                             </span>
                         {% elif reaction == 'dislike' %}
-                            <span class="small text-danger">
-                                <i class="fas fa-thumbs-down"></i> Disliked
+                            <span class="status-message">
+                                <i class="fa-solid fa-thumbs-down text-danger"></i>
+                                Disliked
                             </span>
                         {% endif %}
                     {% endif %}
@@ -40,14 +682,16 @@
                 </div>
 
                 {% if course.description %}
-                    <p class="text-muted small mb-2">
+                    <p class="text-muted small mb-0" style="font-size: 0.9rem;">
                         {{ course.description }}
                     </p>
                 {% endif %}
+
             </div>
 
             <div class="text-end">
-                <span class="badge bg-light text-dark border small">
+                <span class="status-message">
+                    <i class="fa-solid fa-fire text-danger"></i>
                     Popularity: {{ course.popularity_score }}
                 </span>
             </div>
@@ -55,16 +699,15 @@
         </div>
 
         {% if user_reaction %}
-            <div class="mt-2">
-                <span class="badge bg-info-subtle text-info-emphasis border small">
+            <div class="mt-3">
+                <span class="status-message">
+                    <i class="fa-solid fa-comment-dots"></i>
                     Your reaction: {{ user_reaction|capitalize }}
                 </span>
             </div>
         {% endif %}
 
-        <hr class="mt-3">
     </div>
-
 
     <!-- Course Content -->
     {% if course.content.modules %}
@@ -72,16 +715,24 @@
         <div class="accordion" id="courseAccordion">
 
             {% for module in course.content.modules %}
-                <div class="accordion-item border-0 mb-2 shadow-sm rounded">
+                <div class="accordion-item module-card border-0 mb-3 shadow-sm">
 
                     <h2 class="accordion-header" id="heading{{ loop.index }}">
-                        <button class="accordion-button collapsed py-2 small fw-medium"
+                        <button class="accordion-button collapsed py-3 fw-semibold"
                                 type="button"
                                 data-bs-toggle="collapse"
-                                data-bs-target="#collapse{{ loop.index }}"
-                                aria-expanded="false">
+                                data-bs-target="#collapse{{ loop.index }}">
 
+                            <i class="fa-solid fa-layer-group text-primary me-2"></i>
                             {{ module.title }}
+                            <span class="module-badge">
+                                <i class="fa-regular fa-file-lines me-1"></i>
+                                {{ module.lessons|length }} lessons
+                            </span>
+                            {% set module_avg = module_averages.get(module_index) %}
+                            {% if module_avg is not none %}
+                                <span class="badge bg-info ms-2">Avg Score: {{ "%.1f"|format(module_avg) }}%</span>
+                            {% endif %}
                         </button>
                     </h2>
 
@@ -92,24 +743,192 @@
                         <div class="accordion-body py-3">
 
                             {% if module.lessons %}
-                                <ul class="list-unstyled mb-0">
+                                {% set module_index = loop.index0 %}
+                                <div class="list-unstyled mb-0">
 
                                     {% for lesson in module.lessons %}
-                                        <li class="mb-3">
+                                        {% set lesson_index = loop.index0 %}
+                                        <div class="lesson-item">
 
-                                            <div class="fw-semibold small mb-1">
+                                            <div class="lesson-title">
+                                                <i class="fa-solid fa-circle-dot text-primary me-2"></i>
                                                 {{ lesson.title }}
+                                                
+                                                {% if lesson.video_url %}
+                                                    <span class="lesson-badge badge-video">
+                                                        <i class="fa-solid fa-video"></i> Video Available
+                                                    </span>
+                                                {% endif %}
+                                                
+                                                {% if lesson.has_assessment %}
+                                                    <span class="lesson-badge badge-quiz">
+                                                        <i class="fa-solid fa-clipboard-list"></i> Quiz Available
+                                                    </span>
+                                                {% endif %}
                                             </div>
 
-                                            <div class="text-muted small">
-                                                {{ lesson.content }}
+                                            <div class="lesson-content">
+                                                {{ lesson.summary if lesson.summary else lesson.content }}
+                                                {% set lesson_score = scores.get(module_index|string + '_' + lesson_index|string) %}
+                                                {% if lesson_score is not none %}
+                                                    <span class="badge bg-success">Quiz Score: {{ "%.1f"|format(lesson_score) }}%</span>
+                                                {% endif %}
                                             </div>
 
-                                        </li>
+                                            <!-- GROUP 1: NOTES SECTION - Premium Card -->
+                                            <div class="content-group notes-group">
+                                                <div class="content-group-header">
+                                                    <i class="fa-solid fa-file-lines"></i>
+                                                    <h5>📝 Study Notes</h5>
+                                                </div>
+                                                <div class="content-group-body">
+                                                    <div class="action-grid">
+                                                        <a href="/generate_lesson_notes/{{ course.id }}/{{ module_index }}/{{ lesson_index }}" 
+                                                           class="btn btn-sm btn-outline-primary"
+                                                           onclick="showLoader('Generating comprehensive notes...')">
+                                                            <i class="fa-solid fa-magic me-1"></i> Generate Notes
+                                                        </a>
+                                                        
+                                                        {% if session.get('notes_' + (course.id|string) + '_' + (module_index|string) + '_' + (lesson_index|string)) %}
+                                                            <a href="/view_lesson_notes/{{ course.id }}/{{ module_index }}/{{ lesson_index }}" 
+                                                               class="btn btn-sm btn-outline-info" target="_blank">
+                                                                <i class="fa-solid fa-eye me-1"></i> View Notes
+                                                            </a>
+                                                            
+                                                            <a href="/download_lesson_notes/{{ course.id }}/{{ module_index }}/{{ lesson_index }}" 
+                                                               class="btn btn-sm btn-outline-success">
+                                                                <i class="fa-solid fa-download me-1"></i> Download Notes
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- GROUP 2: PRESENTATION SECTION - Premium Card -->
+                                            <div class="content-group slides-group">
+                                                <div class="content-group-header">
+                                                    <i class="fa-solid fa-file-powerpoint"></i>
+                                                    <h5>📊 Presentation Slides</h5>
+                                                </div>
+                                                <div class="content-group-body">
+                                                    <div class="action-grid">
+                                                        <a href="/generate_lesson_pptx/{{ course.id }}/{{ module_index }}/{{ lesson_index }}" 
+                                                           class="btn btn-sm btn-outline-danger"
+                                                           onclick="showLoader('Generating presentation slides...')">
+                                                            <i class="fa-solid fa-magic me-1"></i> Generate Slides
+                                                        </a>
+                                                        
+                                                        {% if session.get('pptx_' + (course.id|string) + '_' + (module_index|string) + '_' + (lesson_index|string)) %}
+                                                            <a href="/view_lesson_slides/{{ course.id }}/{{ module_index }}/{{ lesson_index }}" 
+                                                               class="btn btn-sm btn-outline-info" target="_blank">
+                                                                <i class="fa-solid fa-eye me-1"></i> View Slides
+                                                            </a>
+                                                            
+                                                            <a href="{{ url_for('main.download_lesson_pptx',
+                                                                course_id=course.id,
+                                                                module_index=module_index,
+                                                                lesson_index=lesson_index) }}" 
+                                                               class="btn btn-sm btn-outline-success">
+                                                                <i class="fa-solid fa-download me-1"></i> Download Slides
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- GROUP 3: VIDEO SECTION - Premium Card -->
+                                            <div class="content-group video-group">
+                                                <div class="content-group-header">
+                                                    <i class="fa-solid fa-video"></i>
+                                                    <h5>🎬 Video Content</h5>
+                                                </div>
+                                                <div class="content-group-body">
+                                                    <div class="action-grid">
+                                                        {% if session.get('video_' + (course.id|string) + '_' + (module_index|string) + '_' + (lesson_index|string)) %}
+                                                            <a href="/view_lesson_video/{{ course.id }}/{{ module_index }}/{{ lesson_index }}" 
+                                                               class="btn btn-sm btn-primary" target="_blank">
+                                                                <i class="fa-solid fa-play me-1"></i> Watch Video
+                                                            </a>
+                                                            
+                                                            <a href="{{ url_for('main.download_lesson_video',
+                                                                course_id=course.id,
+                                                                module_index=module_index,
+                                                                lesson_index=lesson_index) }}" 
+                                                               class="btn btn-sm btn-outline-secondary">
+                                                                <i class="fa-solid fa-download me-1"></i> Download Video
+                                                            </a>
+                                                        {% elif session.get('notes_' + (course.id|string) + '_' + (module_index|string) + '_' + (lesson_index|string)) and session.get('pptx_' + (course.id|string) + '_' + (module_index|string) + '_' + (lesson_index|string)) %}
+                                                            <a href="/generate_lesson_video/{{ course.id }}/{{ module_index }}/{{ lesson_index }}" 
+                                                               class="btn btn-sm btn-primary"
+                                                               onclick="showLoader('Generating video from notes and slides...')">
+                                                                <i class="fa-solid fa-magic me-1"></i> Generate Video
+                                                            </a>
+                                                        {% else %}
+                                                            <button class="btn btn-sm btn-secondary" disabled style="opacity: 0.6; cursor: not-allowed;" title="Generate notes and slides first">
+                                                                <i class="fa-solid fa-video-slash me-1"></i> Generate Notes & Slides First
+                                                            </button>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- GROUP 4: ASSESSMENT SECTION - Premium Card -->
+                                            <div class="content-group assessment-group">
+                                                <div class="content-group-header">
+                                                    <i class="fa-solid fa-clipboard-list"></i>
+                                                    <h5>📋 Assessment & Quizzes</h5>
+                                                </div>
+                                                <div class="content-group-body">
+                                                    <div class="action-grid">
+                                                        <a href="{{ url_for('main.lesson_quiz') }}?course={{ course.id }}&module={{ module_index }}&lesson={{ lesson_index }}" 
+                                                           class="btn btn-sm btn-warning fw-bold" target="_blank">
+                                                            <i class="fa-solid fa-vial me-1"></i> Take Quiz
+                                                        </a>
+                                                        
+                                                        <button class="btn btn-sm btn-outline-info" 
+                                                                onclick="generateQuiz({{ course.id }}, {{ module_index }}, {{ lesson_index }})">
+                                                            <i class="fa-solid fa-magic me-1"></i> Generate Quiz
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
                                     {% endfor %}
 
-                                </ul>
+                                </div>
                             {% endif %}
+
+                            <!-- MODULE SUMMARY -->
+                            <div class="module-summary mt-4 p-3 bg-light rounded">
+                                <h6 class="fw-bold text-primary mb-2">
+                                    <i class="fa-solid fa-chart-bar me-2"></i>Module Progress Summary
+                                </h6>
+                                {% set module_avg = module_averages.get(module_index) %}
+                                {% set completed = module_completed.get(module_index, false) %}
+                                {% if module_avg is not none %}
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                        <div>
+                                            <span class="badge bg-success me-2">Average Quiz Score: {{ "%.1f"|format(module_avg) }}%</span>
+                                            <p class="mb-1 text-muted small">Based on completed lesson quizzes.</p>
+                                            {% if completed %}
+                                                <span class="badge bg-info">Module assessment unlocked</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Complete all 3 lessons to unlock assessment</span>
+                                            {% endif %}
+                                        </div>
+                                        {% if completed %}
+                                            <a href="{{ url_for('main.module_assessment', course_id=course.id, module_index=module_index) }}" 
+                                               class="btn btn-primary btn-sm mt-2 mt-sm-0">
+                                                <i class="fa-solid fa-clipboard-check me-1"></i>Take Module Assessment
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <p class="mb-1 text-muted">No quiz scores available for this module yet.</p>
+                                    <span class="badge bg-secondary">Finish all lesson quizzes to unlock the module assessment</span>
+                                {% endif %}
+                            </div>
 
                         </div>
                     </div>
@@ -121,12 +940,55 @@
 
     {% else %}
 
-        <!-- Fallback Rendering -->
-        <div class="bg-light p-3 rounded small">
+        <div class="bg-light p-4 rounded shadow-sm small">
             <pre class="mb-0">{{ course.content | tojson(indent=2) }}</pre>
         </div>
 
     {% endif %}
 
 </div>
+
+<script>
+// Premium Loader Function
+function showLoader(message) {
+    const loaderHtml = `
+        <div class="loader-overlay" id="loaderOverlay">
+            <div class="loader-content">
+                <div class="loader-spinner"></div>
+                <p class="mt-2 mb-0 fw-semibold" style="color: var(--primary);">${message}</p>
+                <p class="small text-muted mt-1 mb-0">Please wait...</p>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', loaderHtml);
+}
+
+// Auto-hide loader after page loads
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const loader = document.getElementById('loaderOverlay');
+        if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.remove(), 300);
+        }
+    }, 1000);
+});
+
+// Add smooth animation to modules on load
+document.addEventListener('DOMContentLoaded', function() {
+    const modules = document.querySelectorAll('.module-card');
+    modules.forEach((module, index) => {
+        module.style.animation = `fadeInUp 0.5s ease ${index * 0.1}s forwards`;
+        module.style.opacity = '0';
+        module.style.animationFillMode = 'forwards';
+    });
+});
+
+// Quiz generation function
+function generateQuiz(courseId, moduleIndex, lessonIndex) {
+    showLoader('Generating quiz questions...');
+    window.location.href = `/generate_lesson_quiz/${courseId}/${moduleIndex}/${lessonIndex}`;
+}
+</script>
+
 {% endblock %}

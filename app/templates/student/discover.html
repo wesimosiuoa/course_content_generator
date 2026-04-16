@@ -1,60 +1,104 @@
 {% extends "student/dashboard_base.html" %}
 {% block content %}
 
+<style>
+.section-heading {
+    font-weight: 700;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-card {
+    background: linear-gradient(135deg, #ffffff, #f8faff);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.course-card {
+    border-radius: 16px;
+    transition: all 0.25s ease;
+}
+
+.course-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.06);
+}
+
+.generate-box {
+    border-radius: 16px;
+    background: linear-gradient(135deg, #fff7ed, #fffbeb);
+    border: 1px solid #fde68a;
+}
+
+.badge-level {
+    background: #eef2ff;
+    color: #3730a3;
+    font-weight: 500;
+}
+</style>
+
 <div class="container">
 
-
-    <!-- 🚀 Empty State (Future: Generate Course) -->
+    <!-- 🚀 Empty State -->
     {% if request.args.get('query') and not search_results %}
-        <div class="alert alert-warning shadow-sm">
-            <h6 class="fw-semibold mb-2">
-                🚀 No courses found for "{{ request.args.get('query') }}"
+        <div class="alert generate-box shadow-sm p-4">
+
+            <h6 class="fw-bold mb-2">
+                <i class="fa-solid fa-rocket me-2 text-warning"></i>
+                No courses found for "{{ request.args.get('query') }}"
             </h6>
 
             <p class="text-muted small mb-3">
-                We couldn't find this topic.
-                Based on your learning history, we can create a personalized course tailored to your level.
+                This topic isn’t in our library yet.
+                Our AI can instantly design a structured, mastery-focused course tailored specifically to your level and goals.
             </p>
 
-            <a href="/generate_course?topic={{ request.args.get('query') }}"
-               class="btn btn-primary">
-                Generate Course
+            <a href="/learner_generate_course?topic={{ request.args.get('query') }}"
+               class="btn btn-warning fw-semibold px-4">
+                <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
+                Generate Personalized Course
             </a>
         </div>
     {% endif %}
-    <!-- 🔎 Search Section -->
-    <div class="mb-4">
-        
-        <form method="GET" action="/discover">
-            
-            <div class="input-group shadow-sm">
-                <input type="text"
-                       name="query"
-                       class="form-control"
-                       placeholder="Search for courses, domains, skills..."
-                       value="{{ request.args.get('query', '') }}">
-                <button class="btn btn-primary px-4">
-                    Search
-                </button>
-            </div>
-        </form>
-    </div>
 
+    <!-- 🔎 Search Section -->
+    <div class="mb-5">
+        <div class="search-card shadow-sm">
+            <form method="GET" action="/discover">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-0">
+                        <i class="fa-solid fa-magnifying-glass text-muted"></i>
+                    </span>
+                    <input type="text"
+                           name="query"
+                           class="form-control border-0"
+                           placeholder="Search for courses, domains, skills..."
+                           value="{{ request.args.get('query', '') }}">
+                    <button class="btn btn-primary px-4 fw-semibold">
+                        Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- 🔍 Search Results -->
     {% if search_results %}
         <div class="mb-5">
-            <h5 class="fw-semibold mb-3">
-                🔍 Search Results
+            <h5 class="section-heading mb-4">
+                <i class="fa-solid fa-magnifying-glass-chart text-primary"></i>
+                Search Results
             </h5>
 
-            <div class="row g-3">
+            <div class="row g-4">
                 {% for course in search_results %}
                     <div class="col-md-6 col-lg-4">
-                        <div class="card shadow-sm border-0 h-100">
+                        <div class="card course-card shadow-sm border-0 h-100">
                             <div class="card-body">
 
-                                <h6 class="fw-semibold">
+                                <h6 class="fw-bold">
                                     {{ course.title }}
                                 </h6>
 
@@ -62,12 +106,12 @@
                                     {{ course.content.overview if course.content }}
                                 </p>
 
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="badge bg-light text-dark border">
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="badge badge-level">
                                         {{ course.level }}
                                     </span>
                                     <a href="view_my_course/{{ course.id }}"
-                                       class="btn btn-sm btn-outline-primary">
+                                       class="btn btn-sm btn-outline-primary fw-semibold">
                                         View
                                     </a>
                                 </div>
@@ -80,21 +124,21 @@
         </div>
     {% endif %}
 
-
     <!-- 🌟 Recommended Section -->
     {% if recommended_courses %}
         <div class="mb-5">
-            <h5 class="fw-semibold mb-3">
-                🌟Recommended For You
+            <h5 class="section-heading mb-4">
+                <i class="fa-solid fa-star text-warning"></i>
+                Recommended For You
             </h5>
 
-            <div class="row g-3">
+            <div class="row g-4">
                 {% for course in recommended_courses %}
                     <div class="col-md-6 col-lg-4">
-                        <div class="card shadow-sm border-0 h-100">
+                        <div class="card course-card shadow-sm border-0 h-100">
                             <div class="card-body">
 
-                                <h6 class="fw-semibold">
+                                <h6 class="fw-bold">
                                     {{ course.title }}
                                 </h6>
 
@@ -103,7 +147,8 @@
                                 </p>
 
                                 <a href="/view_my_course/{{ course.id }}"
-                                   class="btn btn-sm btn-primary w-100">
+                                   class="btn btn-sm btn-primary w-100 fw-semibold mt-3">
+                                    <i class="fa-solid fa-compass me-2"></i>
                                     Explore
                                 </a>
 
@@ -115,59 +160,63 @@
         </div>
     {% endif %}
 
-
     <!-- 📈 Trending Section -->
     {% if trending_courses %}
         <div class="mb-5">
-            <h5 class="fw-semibold mb-3">
-                📈 Trending Courses
+            <h5 class="section-heading mb-4">
+                <i class="fa-solid fa-fire text-danger"></i>
+                Trending Courses
             </h5>
 
-            <div class="row g-3">
+            <div class="row g-4">
                 {% for course in trending_courses %}
                     <div class="col-md-6 col-lg-4">
-                        <div class="card shadow-sm border-0 h-100">
+                        <div class="card course-card shadow-sm border-0 h-100">
                             <div class="card-body">
 
-                                <h6 class="fw-semibold">
+                                <h6 class="fw-bold">
                                     {{ course.title }}
                                 </h6>
 
                                 <p class="small text-muted">
-                                    Popularity: {{ course.popularity_score }}
+                                    Popularity Score: {{ course.popularity_score }}
                                 </p>
-                                <div class="info d-flex align-items-center gap-3 flex-wrap">
+
+                                <div class="info d-flex align-items-center gap-3 flex-wrap mt-2 mb-3">
 
                                     {% if not enrolled %}
                                         <a href="/enroll_course/{{ course.id }}"
-                                        class="btn btn-custom btn-sm">
+                                           class="btn btn-sm btn-outline-success fw-semibold">
+                                            <i class="fa-solid fa-user-plus me-1"></i>
                                             Enroll
                                         </a>
                                     {% else %}
-                                        <span class="text small">
-                                            <i class="fas fa-check-circle"></i> Enrolled
+                                        <span class="small text-success fw-semibold">
+                                            <i class="fa-solid fa-circle-check me-1"></i>
+                                            Enrolled
                                         </span>
                                     {% endif %}
 
                                     {% if reaction %}
                                         {% if reaction == 'like' %}
-                                            <span class="small text">
-                                                <i class="fas fa-thumbs-up"></i> Liked
+                                            <span class="small text-primary">
+                                                <i class="fa-solid fa-thumbs-up me-1"></i>
+                                                Liked
                                             </span>
                                         {% elif reaction == 'dislike' %}
                                             <span class="small text-danger">
-                                                <i class="fas fa-thumbs-down"></i> Disliked
+                                                <i class="fa-solid fa-thumbs-down me-1"></i>
+                                                Disliked
                                             </span>
                                         {% endif %}
                                     {% endif %}
 
                                 </div>
-                                
+
                                 <a href="/view_my_course/{{ course.id }}"
-                                   class="btn btn-sm btn-outline-dark w-100">
+                                   class="btn btn-sm btn-outline-dark w-100 fw-semibold">
                                     View Course
                                 </a>
-                                
 
                             </div>
                         </div>
@@ -176,9 +225,6 @@
             </div>
         </div>
     {% endif %}
-
-
-
 
 </div>
 

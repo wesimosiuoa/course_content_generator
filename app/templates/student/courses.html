@@ -1,51 +1,139 @@
-
 {% extends "student/dashboard_base.html" %}
 {% block content %}
+
+<style>
+.page-title {
+    font-weight: 800;
+    font-size: 1.6rem;
+}
+
+.page-subtitle {
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+.course-card {
+    border-radius: 18px;
+    transition: all 0.25s ease;
+    overflow: hidden;
+}
+
+.course-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 35px rgba(0, 0, 0, 0.06);
+}
+
+.course-footer-btn {
+    border-top: 1px solid #f1f5f9;
+    border-radius: 0 0 18px 18px;
+}
+
+.empty-state {
+    background: linear-gradient(135deg, #f8fafc, #eef2ff);
+    border-radius: 18px;
+    padding: 40px;
+    text-align: center;
+}
+</style>
+
 <div class="container">
-    <h1 class="mt-4">My Courses</h1>
-    <p class="lead">Here are the courses you are currently enrolled in.</p>
 
-    <div class="row">
+    <!-- Page Header -->
+    <div class="mt-4 mb-4">
+        <h1 class="page-title">
+            <i class="fa-solid fa-book-open-reader text-primary me-2"></i>
+            My Courses
+        </h1>
+        <p class="page-subtitle">
+            These are the structured learning programs currently shaping your mastery journey.
+        </p>
+    </div>
+
+    <div class="row g-4">
+
         {% for course in courses %}
-        <div class="col-md-4">
-            <div class="card mb-4">
+        <div class="col-md-6 col-lg-4">
+
+            <div class="card course-card shadow-sm border-0 h-100">
+
                 <div class="card-body">
-                    <h5 class="card-title">{{ course.title }}</h5>
-                    <p class="card-text">{{ course.overview | tojson(indent=2) }}</p> 
 
-                    <div class="info d-flex align-items-center gap-3 flex-wrap">
+                    <h5 class="card-title fw-bold">
+                        {{ course.title }}
+                    </h5>
 
-                                    {% if not enrolled %}
-                                        <a href="/enroll_course/{{ course.id }}"
-                                        class="btn btn-custom btn-sm">
-                                            Enroll
-                                        </a>
-                                    
-                                        
-                                    {% endif %}
+                    <p class="card-text small text-muted">
+                        {{ course.overview | tojson(indent=2) }}
+                    </p>
 
-                                    {% if reaction %}
-                                        {% if reaction == 'like' %}
-                                            <span class="small text">
-                                                <i class="fas fa-thumbs-up"></i> Liked
-                                            </span>
-                                        {% elif reaction == 'dislike' %}
-                                            <span class="small text-danger">
-                                                <i class="fas fa-thumbs-down"></i> Disliked
-                                            </span>
-                                        {% endif %}
-                                    {% endif %}
+                    <div class="info d-flex align-items-center gap-3 flex-wrap mt-3">
 
-                                </div>
+                        {% if not enrolled %}
+                            <!-- <a href="/enroll_course/{{ course.id }}"
+                               class="btn btn-outline-success btn-sm fw-semibold">
+                                <i class="fa-solid fa-user-plus me-1"></i>
+                                Enroll
+                            </a> -->
+                        {% endif %}
+
+                        {% if reaction %}
+                            {% if reaction == 'like' %}
+                                <span class="small text-primary fw-semibold">
+                                    <i class="fa-solid fa-thumbs-up me-1"></i>
+                                    Liked
+                                </span>
+                            {% elif reaction == 'dislike' %}
+                                <span class="small text-danger fw-semibold">
+                                    <i class="fa-solid fa-thumbs-down me-1"></i>
+                                    Disliked
+                                </span>
+                            {% endif %}
+                        {% endif %}
+
+                    </div>
 
                 </div>
-                <a href="/view_my_course/{{ course.id }}" class="btn btn-primary-custom">Go to Course</a>
+
+                <div class="course-footer-btn p-3 bg-white">
+                    <a href="/view_my_course/{{ course.id }}"
+                       class="btn btn-primary w-100 fw-semibold">
+                        <i class="fa-solid fa-arrow-right me-2"></i>
+                        Go to Course
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <!-- Empty State -->
+        <div class="col-12">
+            <div class="empty-state shadow-sm">
+
+                <i class="fa-solid fa-compass fa-2x text-primary mb-3"></i>
+
+                <h5 class="fw-bold mb-2">
+                    Your Learning Journey Hasn't Started Yet
+                </h5>
+
+                <p class="text-muted small mb-3">
+                    Enroll in a course or generate a personalized learning pathway to begin building measurable expertise.
+                </p>
+
+                <a href="/discover" class="btn btn-primary px-4 fw-semibold">
+                    <i class="fa-solid fa-magnifying-glass me-2"></i>
+                    Discover Courses
+                </a>
+
             </div>
         </div>
-        {% else %}
-        <div class="col-12">
-            <p class="text-muted">You are not enrolled in any courses yet.</p>
-        </div>
+
         {% endfor %}
+
     </div>
-</div>{% endblock %}
+
+</div>
+
+{% endblock %}

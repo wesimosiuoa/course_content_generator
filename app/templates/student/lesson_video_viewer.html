@@ -1,0 +1,418 @@
+{% extends "student/dashboard_base.html" %}
+{% block content %}
+
+<style>
+/* Video Viewer Styles */
+.video-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.video-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-radius: 15px;
+    border: 1px solid #e2e8f0;
+}
+
+.video-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.video-meta {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.video-player-section {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    background: #000;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.video-element {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 15px;
+}
+
+.video-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 0 0 20px 20px;
+    margin-top: -5px;
+}
+
+.control-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.control-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-play {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.btn-pause {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.btn-restart {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+}
+
+.btn-fullscreen {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+}
+
+.btn-download {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+.video-info {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.video-info h5 {
+    color: #92400e;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.video-info p {
+    color: #78350f;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.video-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.back-btn {
+    background: linear-gradient(135deg, #64748b, #475569);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    color: white;
+    text-decoration: none;
+}
+
+/* Loading overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-content {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .video-container {
+        padding: 15px;
+    }
+
+    .video-title {
+        font-size: 1.5rem;
+    }
+
+    .video-player-section {
+        padding: 20px;
+    }
+
+    .video-controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .control-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .video-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .video-title {
+        font-size: 1.3rem;
+    }
+
+    .video-player-section {
+        padding: 15px;
+    }
+}
+</style>
+
+<div class="video-container">
+    <!-- Video Header -->
+    <div class="video-header">
+        <h1 class="video-title">
+            <i class="fas fa-video me-2"></i>
+            {{ title }}
+        </h1>
+        <div class="video-meta">
+            <i class="fas fa-file-video me-1"></i>
+            {{ filename }}
+        </div>
+    </div>
+
+    <!-- Video Info Alert -->
+    <div class="video-info">
+        <h5><i class="fas fa-info-circle me-2"></i>Video Information</h5>
+        <p>This video was automatically generated from your lesson notes and presentation slides using AI-powered text-to-speech narration. The content is synchronized to provide an engaging learning experience.</p>
+    </div>
+
+    <!-- Video Player -->
+    <div class="video-player-section">
+        <div class="video-wrapper">
+            <video id="lessonVideo" class="video-element" preload="metadata">
+                <source src="{{ url_for('main.serve_lesson_video', course_id=course_id, module_index=module_index, lesson_index=lesson_index) }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+
+        <!-- Video Controls -->
+        <div class="video-controls">
+            <button id="playBtn" class="control-btn btn-play">
+                <i class="fas fa-play"></i> Play
+            </button>
+            <button id="pauseBtn" class="control-btn btn-pause" style="display: none;">
+                <i class="fas fa-pause"></i> Pause
+            </button>
+            <button id="restartBtn" class="control-btn btn-restart">
+                <i class="fas fa-redo"></i> Restart
+            </button>
+            <button id="fullscreenBtn" class="control-btn btn-fullscreen">
+                <i class="fas fa-expand"></i> Fullscreen
+            </button>
+            <a href="{{ url_for('main.download_lesson_video', course_id=course_id, module_index=module_index, lesson_index=lesson_index) }}"
+               class="control-btn btn-download">
+                <i class="fas fa-download"></i> Download
+            </a>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="video-actions">
+        <a href="{{ url_for('main.view_my_course', course_id=course_id) }}" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Course
+        </a>
+    </div>
+</div>
+
+<script>
+// Video player functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const video = document.getElementById('lessonVideo');
+    const playBtn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    // Play button
+    playBtn.addEventListener('click', function() {
+        video.play();
+        playBtn.style.display = 'none';
+        pauseBtn.style.display = 'inline-flex';
+    });
+
+    // Pause button
+    pauseBtn.addEventListener('click', function() {
+        video.pause();
+        pauseBtn.style.display = 'none';
+        playBtn.style.display = 'inline-flex';
+    });
+
+    // Restart button
+    restartBtn.addEventListener('click', function() {
+        video.currentTime = 0;
+        video.play();
+        playBtn.style.display = 'none';
+        pauseBtn.style.display = 'inline-flex';
+    });
+
+    // Fullscreen button
+    fullscreenBtn.addEventListener('click', function() {
+        if (video.requestFullscreen) {
+            video.requestFullscreen();
+        } else if (video.webkitRequestFullscreen) {
+            video.webkitRequestFullscreen();
+        } else if (video.msRequestFullscreen) {
+            video.msRequestFullscreen();
+        }
+    });
+
+    // Handle video end
+    video.addEventListener('ended', function() {
+        pauseBtn.style.display = 'none';
+        playBtn.style.display = 'inline-flex';
+    });
+
+    // Handle video play/pause events
+    video.addEventListener('play', function() {
+        playBtn.style.display = 'none';
+        pauseBtn.style.display = 'inline-flex';
+    });
+
+    video.addEventListener('pause', function() {
+        pauseBtn.style.display = 'none';
+        playBtn.style.display = 'inline-flex';
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        switch(e.code) {
+            case 'Space':
+                e.preventDefault();
+                if (video.paused) {
+                    video.play();
+                } else {
+                    video.pause();
+                }
+                break;
+            case 'KeyF':
+                e.preventDefault();
+                fullscreenBtn.click();
+                break;
+            case 'KeyR':
+                e.preventDefault();
+                restartBtn.click();
+                break;
+        }
+    });
+
+    // Show loading overlay initially
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'loading-overlay';
+    loadingOverlay.innerHTML = `
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h4>Loading Video...</h4>
+            <p>Please wait while we prepare your lesson video.</p>
+        </div>
+    `;
+    document.body.appendChild(loadingOverlay);
+
+    // Hide loading when video can play
+    video.addEventListener('canplay', function() {
+        loadingOverlay.style.opacity = '0';
+        setTimeout(() => {
+            if (loadingOverlay.parentNode) {
+                loadingOverlay.parentNode.removeChild(loadingOverlay);
+            }
+        }, 300);
+    });
+
+    // Error handling
+    video.addEventListener('error', function() {
+        loadingOverlay.innerHTML = `
+            <div class="loading-content">
+                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 20px;"></i>
+                <h4>Video Load Error</h4>
+                <p>Sorry, we couldn't load the video. Please try downloading it instead.</p>
+                <a href="{{ url_for('main.download_lesson_video', course_id=course_id, module_index=module_index, lesson_index=lesson_index) }}"
+                   class="btn btn-primary mt-3">
+                    <i class="fas fa-download me-2"></i> Download Video
+                </a>
+            </div>
+        `;
+    });
+});
+</script>
+
+{% endblock %}

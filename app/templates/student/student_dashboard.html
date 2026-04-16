@@ -1,38 +1,168 @@
 {% extends "student/dashboard_base.html" %}
 {% block content %}
-<div class="container">
-    <h1 class="mt-4">Welcome, {{ full_name }}!</h1>
-    <p class="lead">This is your student dashboard where you can access your courses, view progress, and manage your account.</p>
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">My Courses</h5>
-                    <p class="card-text">View and manage the courses you are enrolled in.</p>
-                    <a href="/my_courses" class="btn btn-primary-custom">Go to My Courses</a>
+<style>
+.dashboard-hero {
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    border-radius: 20px;
+    padding: 40px;
+    margin-bottom: 40px;
+}
+
+.hero-title {
+    font-weight: 800;
+    font-size: 1.8rem;
+}
+
+.hero-subtitle {
+    color: #6b7280;
+    font-size: 1rem;
+    max-width: 650px;
+}
+
+.dashboard-card {
+    border-radius: 18px;
+    transition: all 0.25s ease;
+    overflow: hidden;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 35px rgba(0,0,0,0.06);
+}
+
+.card-icon {
+    font-size: 1.4rem;
+    margin-bottom: 12px;
+}
+
+.card-title-custom {
+    font-weight: 700;
+}
+</style>
+
+<div class="container">
+
+    <!-- Hero Section -->
+    <div class="dashboard-hero shadow-sm">
+
+        <h1 class="hero-title mb-3">
+            <i class="fa-solid fa-user-graduate text-primary me-2"></i>
+            Welcome, {{ full_name }}!
+        </h1>
+
+        <p class="hero-subtitle">
+            This is your intelligent learning command center. 
+            Access your structured programs, explore new mastery paths, and monitor your academic growth with precision.
+        </p>
+
+    </div>
+
+    <!-- Action Cards -->
+    <div class="row g-4">
+
+        <!-- My Courses -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card dashboard-card shadow-sm border-0 h-100">
+                <div class="card-body text-center p-4">
+
+                    <div class="card-icon text-primary">
+                        <i class="fa-solid fa-book-open-reader"></i>
+                    </div>
+
+                    <h5 class="card-title-custom">
+                        My Courses
+                    </h5>
+
+                    <p class="card-text text-muted small">
+                        View, manage, and continue the structured learning paths you are currently enrolled in.
+                    </p>
+
+                    <a href="/my_courses" class="btn btn-primary w-100 fw-semibold mt-3">
+                        Go to My Courses
+                    </a>
+
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Discover</h5>
-                    <p class="card-text">Explore new courses and content tailored to your interests.</p>
-                    <a href="/discover" class="btn btn-primary-custom">Discover Courses</a>
+
+        <!-- Discover -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card dashboard-card shadow-sm border-0 h-100">
+                <div class="card-body text-center p-4">
+
+                    <div class="card-icon text-success">
+                        <i class="fa-solid fa-compass"></i>
+                    </div>
+
+                    <h5 class="card-title-custom">
+                        Discover
+                    </h5>
+
+                    <p class="card-text text-muted small">
+                        Explore new domains and generate AI-powered courses tailored to your ambitions.
+                    </p>
+
+                    <a href="/discover" class="btn btn-success w-100 fw-semibold mt-3">
+                        Discover Courses
+                    </a>
+
                 </div>
             </div>  
         </div>
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title
-                    ">Progress</h5>
-                    <p class="card-text">Track your learning progress and achievements.</p>
-                    <a href="#" class="btn btn-primary-custom">View Progress</a>
+
+        <!-- Progress -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card dashboard-card shadow-sm border-0 h-100">
+                <div class="card-body text-center p-4">
+
+                    <div class="card-icon text-warning">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+
+                    <h5 class="card-title-custom">
+                        Progress
+                    </h5>
+
+                    <p class="card-text text-muted small">
+                        Track your performance metrics, learning streaks, and measurable achievements.
+                    </p>
+
+                    <a href="#" class="btn btn-warning w-100 fw-semibold mt-3">
+                        View Progress
+                    </a>
+
                 </div>
             </div>
         </div>
+
+        <!-- Update Preferences -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card dashboard-card shadow-sm border-0 h-100">
+                <div class="card-body text-center p-4">
+
+                    <div class="card-icon text-info">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+
+                    <h5 class="card-title-custom">
+                        Learning Preferences
+                    </h5>
+
+                    <p class="card-text text-muted small">
+                        Update your learning preferences to refine your personalized course recommendations.
+                    </p>
+
+                    <a href="/set_preferences" class="btn btn-info w-100 fw-semibold mt-3 text-white">
+                        Update Preferences
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
     </div>
+
 </div>
+
 {% endblock %}

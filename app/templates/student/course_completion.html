@@ -1,0 +1,265 @@
+{% extends "student/dashboard_base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Course Completion & Certificate</h2>
+    
+    <div id="loading" class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Loading completion status...</p>
+    </div>
+    
+    <div id="completion-status" style="display: none;">
+        <!-- Final Grade Card -->
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">📊 Final Grade</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h3 id="final-grade" class="display-4">-</h3>
+                        <p class="text-muted">Grade</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 id="final-score" class="display-4">-</h3>
+                        <p class="text-muted">Score (%)</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 id="status-badge"></h3>
+                        <p class="text-muted">Status</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Grade Breakdown -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">📈 Grade Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6>Module Assessments (40%)</h6>
+                        <div class="progress" style="height: 25px;">
+                            <div id="module-bar" class="progress-bar" style="width: 0%">
+                                <span id="module-score">0%</span>
+                            </div>
+                        </div>
+                        <small class="text-muted">Quizzes + Short Answer Questions</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6>Final Assessment (60%)</h6>
+                        <div class="progress" style="height: 25px;">
+                            <div id="final-bar" class="progress-bar bg-warning" style="width: 0%">
+                                <span id="final-assess-score">0%</span>
+                            </div>
+                        </div>
+                        <small class="text-muted">Final Exam Questions</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Certificate Section -->
+        <div id="certificate-section" style="display: none;">
+            <div class="card mb-4 border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">🎓 Certificate of Completion</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p>Congratulations! You have earned a Certificate of Completion.</p>
+                    <div class="alert alert-success">
+                        <strong>Certificate Code:</strong> <span id="cert-code" class="font-monospace"></span>
+                    </div>
+                    <p>Certificate Issued: <span id="cert-date"></span></p>
+                </div>
+            </div>
+            
+            <div class="text-center mb-4">
+                <button class="btn btn-success btn-lg" onclick="downloadCertificate()">
+                    📥 Download Certificate
+                </button>
+            </div>
+        </div>
+        
+        <!-- Not Passed -->
+        <div id="not-passed-section" style="display: none;">
+            <div class="card border-danger mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">⚠️ Completion Status</h5>
+                </div>
+                <div class="card-body">
+                    <p>You did not achieve the passing grade of 70%.</p>
+                    <p>To earn your certificate, you need to score at least 70% overall.</p>
+                    <p>
+                        <strong>Your Score:</strong> <span id="not-passed-score"></span>%<br>
+                        <strong>Required:</strong> 70%
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pending Grading -->
+        <div id="pending-section" style="display: none;">
+            <div class="card border-warning mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">⏳ Pending Evaluation</h5>
+                </div>
+                <div class="card-body">
+                    <p>Your responses are being evaluated by the instructor.</p>
+                    <p>You will receive your final grade and certificate status once grading is complete.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Assessment Details -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">📋 Assessment Details</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Assessment</th>
+                            <th>Status</th>
+                            <th>Score</th>
+                            <th>Feedback</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assessment-details">
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">Loading details...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div id="error-container" class="alert alert-danger" style="display: none;">
+        <p id="error-message"></p>
+    </div>
+    
+    <div class="mt-4">
+        <a href="/student_dashboard" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>
+
+<style>
+    .progress-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .display-4 {
+        font-weight: bold;
+    }
+</style>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseId = urlParams.get('course');
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCompletionStatus();
+    });
+    
+    function loadCompletionStatus() {
+        fetch(`/assessment/completion/${courseId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    displayCompletionStatus(data.data);
+                } else if (data.status === 'not_graded') {
+                    showPendingGrading();
+                } else {
+                    showError('Failed to load completion status');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Error loading status. Please try again.');
+            });
+    }
+    
+    function displayCompletionStatus(status) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('completion-status').style.display = 'block';
+        
+        // Set final score and grade
+        const score = status.weighted_score || 0;
+        const grade = status.final_grade || 'N/A';
+        
+        document.getElementById('final-score').textContent = score.toFixed(1);
+        document.getElementById('final-grade').textContent = grade;
+        
+        // Update grade breakdown
+        const moduleScore = status.module_average || 0;
+        const finalScore = status.final_assessment_score || 0;
+        
+        document.getElementById('module-bar').style.width = Math.min(moduleScore, 100) + '%';
+        document.getElementById('module-score').textContent = moduleScore.toFixed(1) + '%';
+        
+        document.getElementById('final-bar').style.width = Math.min(finalScore, 100) + '%';
+        document.getElementById('final-assess-score').textContent = finalScore.toFixed(1) + '%';
+        
+        // Show status
+        if (status.passed) {
+            const badge = document.getElementById('status-badge');
+            badge.innerHTML = '<span class="badge bg-success display-6">PASSED ✓</span>';
+            document.getElementById('certificate-section').style.display = 'block';
+            
+            // Try to fetch certificate
+            fetchCertificate();
+        } else {
+            const badge = document.getElementById('status-badge');
+            badge.innerHTML = '<span class="badge bg-danger display-6">NOT PASSED</span>';
+            document.getElementById('not-passed-section').style.display = 'block';
+            document.getElementById('not-passed-score').textContent = score.toFixed(1);
+        }
+    }
+    
+    function showPendingGrading() {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('completion-status').style.display = 'block';
+        document.getElementById('pending-section').style.display = 'block';
+        
+        const badge = document.getElementById('status-badge');
+        badge.innerHTML = '<span class="badge bg-warning display-6">PENDING</span>';
+    }
+    
+    function fetchCertificate() {
+        fetch(`/assessment/certificate/${courseId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'issued' && data.data) {
+                    document.getElementById('cert-code').textContent = data.data.certificate_code;
+                    const issueDate = new Date(data.data.issue_date);
+                    document.getElementById('cert-date').textContent = issueDate.toLocaleDateString();
+                }
+            })
+            .catch(error => console.error('Error loading certificate:', error));
+    }
+    
+    function downloadCertificate() {
+        alert('Certificate download feature coming soon!\n\nCertificate Code: ' + 
+              document.getElementById('cert-code').textContent);
+        // TODO: Implement certificate PDF generation and download
+    }
+    
+    function showError(message) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('completion-status').style.display = 'none';
+        document.getElementById('error-container').style.display = 'block';
+        document.getElementById('error-message').textContent = message;
+    }
+</script>
+{% endblock %}

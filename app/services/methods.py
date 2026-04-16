@@ -2,6 +2,7 @@ from flask import request, session, redirect, url_for, flash
 from app.db_management.sql import select_one, insert, update, select_all
 from app.db_management.db import get_db_connection
 from app.services.profile_service import build_user_profile
+from app.services.llm_service import generate_speech, generate_summary, generate_explanation
 import hashlib
 import json
 
@@ -135,8 +136,11 @@ def save_course_reaction():
 
         conn.commit()
 
-        flash("Reaction saved successfully.", "success")
-        return redirect(url_for("main.view_course", course_id=course_id))
+        flash("Reaction saved successfully!", "success")
+        
+        # Redirect back to preview page to keep the flow smooth
+        # Don't redirect to view_course which might break the session
+        return redirect(url_for("main.preview_generated_course"))
 
     except Exception as e:
         conn.rollback()
@@ -374,3 +378,149 @@ def normalize_courses(courses):
             course["content"] = {}
 
     return courses
+
+
+
+# eleven labs
+# methods.py
+
+
+# ✅ Helper function (place near top or with other helpers)
+def split_text(text, chunk_size=1000):
+    chunks = []
+    while len(text) > chunk_size:
+        split_index = text.rfind(' ', 0, chunk_size)
+        if split_index == -1:
+            split_index = chunk_size
+        chunks.append(text[:split_index])
+        text = text[split_index:]
+    chunks.append(text)
+    return chunks
+
+
+# ✅ Main service function
+def text_to_speech_service(text):
+    if not text or len(text.strip()) == 0:
+        raise ValueError("Text is empty")
+
+    chunks = split_text(text)
+    audio_segments = []
+
+    for chunk in chunks:
+        audio_segments.append(generate_speech(chunk))
+
+    return b"".join(audio_segments)
+
+# summary 
+
+
+
+def summarize_service(text):
+    if not text or len(text.strip()) == 0:
+        raise ValueError("Text is empty")
+
+    chunks = split_text(text)
+
+    partial_summaries = []
+
+    # 🔹 Step 1: summarize each chunk
+    for chunk in chunks:
+        prompt = f"Summarize this for a student in concise bullet points:\n{chunk}"
+        partial_summaries.append(generate_summary(prompt))
+
+    # 🔹 Step 2: combine summaries
+    combined = "\n".join(partial_summaries)
+
+    # 🔹 Step 3: final refinement (VERY IMPORTANT)
+    final_prompt = f"""
+    Combine and refine the following summaries into a clear, concise student-friendly summary:
+
+    {combined}
+    """
+
+    final_summary = generate_summary(final_prompt)
+
+    return final_summary
+
+
+
+def explain_text_service(text, level="simple"):
+    if not text or len(text.strip()) == 0:
+        raise ValueError("Text is empty")
+
+    # 🔥 Control explanation depth (important for LMS intelligence)
+    level_map = {
+        "simple": "Explain in very simple terms like teaching a beginner.",
+        "medium": "Explain clearly with moderate detail.",
+        "advanced": "Explain in a detailed and technical way."
+    }
+
+    instruction = level_map.get(level, level_map["simple"])
+
+    prompt = f"""
+    {instruction}
+
+    Text:
+    {text}
+
+    Keep the explanation clear, structured, and easy to understand.
+    """
+
+    return generate_explanation(prompt)
+
+# get marks for each lesson from db table lesson_quiz_results column score_percentage 
+def get_lesson_quiz_score(user_id, course_id, module_index, lesson_index):
+    conn = get_db_connection()
+    try:
+        result = select_one(conn, """
+            SELECT score_percentage
+            FROM lesson_quiz_results
+            WHERE user_id = %s AND course_id = %s AND module_index = %s AND lesson_index = %s
+        """, (user_id, course_id, module_index, lesson_index))
+
+        return result[0] if result else None
+
+    except Exception as e:
+        print("ERROR fetching lesson quiz score:", e)
+        return None
+
+    finally:
+        conn.close()
+
+def get_module_quiz_average(user_id, course_id, module_index):
+    conn = get_db_connection()
+    try:
+        result = select_one(conn, """
+            SELECT AVG(score_percentage)
+            FROM lesson_quiz_results
+            WHERE user_id = %s AND course_id = %s AND module_index = %s
+        """, (user_id, course_id, module_index))
+
+        return result[0] if result and result[0] is not None else None
+
+    except Exception as e:
+        print("ERROR fetching module quiz average:", e)
+        return None
+
+    finally:
+        conn.close()
+
+def is_module_completed(user_id, course_id, module_index, expected_lessons=3):
+    """Check if all lessons in a module have been completed (have quiz results)"""
+    conn = get_db_connection()
+    try:
+        result = select_one(conn, """
+            SELECT COUNT(*)
+            FROM lesson_quiz_results
+            WHERE user_id = %s AND course_id = %s AND module_index = %s
+        """, (user_id, course_id, module_index))
+
+        completed_lessons = result[0] if result else 0
+        return completed_lessons >= expected_lessons
+
+    except Exception as e:
+        print("ERROR checking module completion:", e)
+        return False
+
+    finally:
+        conn.close()

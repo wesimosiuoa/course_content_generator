@@ -1,0 +1,404 @@
+
+{% extends "student/dashboard_base.html" %}
+{% block content %}
+
+<!-- ✅ Markdown parser -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+
+
+
+
+<style>
+#explainContent {
+    line-height: 1.6;
+}
+#explainContent strong {
+    color: #0d6efd;
+}
+#explainContent ul {
+    padding-left: 20px;
+}
+
+/* KEEP ALL YOUR EXISTING STYLES UNCHANGED */
+.notes-viewer {
+    max-width: 900px;
+    margin: 40px auto;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.notes-header {
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    color: white;
+    padding: 30px;
+    border-radius: 12px 12px 0 0;
+    text-align: center;
+}
+
+.notes-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.notes-meta {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.notes-content {
+    padding: 40px;
+    line-height: 1.8;
+}
+
+.notes-content h1,
+.notes-content h2,
+.notes-content h3 {
+    color: #0d6efd;
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+.notes-content h1 {
+    font-size: 1.6rem;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+}
+
+.notes-content h2 {
+    font-size: 1.4rem;
+}
+
+.notes-content h3 {
+    font-size: 1.2rem;
+}
+
+.notes-content p {
+    margin-bottom: 15px;
+    text-align: justify;
+}
+
+.notes-content ul,
+.notes-content ol {
+    margin-bottom: 15px;
+    padding-left: 25px;
+}
+
+.notes-content li {
+    margin-bottom: 8px;
+}
+
+.notes-footer {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 0 0 12px 12px;
+    text-align: center;
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.action-buttons {
+    position: sticky;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+}
+
+.print-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+}
+
+@media print {
+    .print-btn,
+    .action-buttons,
+    nav,
+    footer {
+        display: none !important;
+    }
+    
+    .notes-viewer {
+        box-shadow: none;
+        margin: 0;
+        max-width: 100%;
+    }
+}
+
+
+#summaryBox {
+    display: none;
+    padding: 25px;
+    background: linear-gradient(135deg, #fff3cd, #ffe69c);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border-left: 6px solid #ffc107;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.summary-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #856404;
+}
+
+.summary-content {
+    line-height: 1.7;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+/* 📱 Mobile responsiveness */
+@media (max-width: 768px) {
+    #summaryBox {
+        padding: 15px;
+        font-size: 0.9rem;
+    }
+}
+
+/* smooth appearance */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<div class="container">
+    
+    <div class="notes-viewer">
+        
+        <div class="notes-header">
+            <h1 class="notes-title">
+                <i class="fa-solid fa-book-open me-2"></i>
+                {{ title }}
+            </h1>
+            <div class="notes-meta">
+                <i class="fa-solid fa-clock me-1"></i>
+                Generated on {{ now() if now else 'Recent' }}
+            </div>
+        </div>
+
+        <br>
+
+        <div class="container">
+            <div class="action-buttons">
+                <a href="/download_lesson_notes/{{ course_id }}/{{ module_index }}/{{ lesson_index }}" 
+                   class="btn btn-success btn-sm" download>
+                    <i class="fa-solid fa-download me-1"></i>
+                </a>
+
+                <button onclick="playAudio()" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                
+
+                <button onclick="summarizeNotes()" class="btn btn-warning btn-sm">
+                    <i class="fa-solid fa-lightbulb"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="summaryBox" style="display:none; padding:20px; background:#fff3cd; border-radius:10px; margin-bottom:20px;"></div>
+
+        <div class="notes-content">
+            {% for paragraph in content %}
+                {% if paragraph.heading %}
+                    {% if paragraph.style_name == 'Heading 1' or loop.index == 1 %}
+                        <h1>{{ paragraph.text }}</h1>
+                    {% elif paragraph.style_name == 'Heading 2' %}
+                        <h2>{{ paragraph.text }}</h2>
+                    {% elif paragraph.style_name == 'Heading 3' %}
+                        <h3>{{ paragraph.text }}</h3>
+                    {% else %}
+                        <p>{{ paragraph.text }}</p>
+                    {% endif %}
+                {% else %}
+                    <p>{{ paragraph.text }}</p>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <div class="notes-footer">
+            <p class="mb-1">
+                <i class="fa-solid fa-circle-info me-1"></i>
+                These notes were AI-generated based on your learning preferences
+            </p>
+        </div>
+
+    </div>
+
+    <button onclick="window.print()" class="btn btn-primary print-btn">
+        <i class="fa-solid fa-print fa-lg"></i>
+    </button>
+
+    <div class="mt-4 text-center">
+        <a href="/view_my_course/{{ course_id }}" class="btn btn-outline-secondary">
+            Back to Course
+        </a>
+    </div>
+
+</div>
+
+<!-- Explain Button -->
+<button id="explainBtn"
+        style="display:none; position:absolute; z-index:3000;"
+        class="btn btn-primary"
+        onclick="explainText()">
+    Explain
+</button>
+
+<!-- ✅ FIXED MODAL -->
+<div id="explainModal" style="
+    display:none;
+    position:fixed;
+    top:10%;
+    left:50%;
+    transform:translateX(-50%);
+    background:white;
+    padding:25px;
+    width:400px;
+    max-height:70vh;
+    overflow-y:auto;
+    border-radius:10px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.2);
+    z-index:2000;">
+
+    <h5>Explanation</h5>
+
+    <button onclick="closeExplain()"
+            class="btn btn-sm btn-danger"
+            style="position:absolute; top:10px; right:10px;">
+        ✕
+    </button>
+
+    <!-- ✅ REQUIRED ELEMENT -->
+    <div id="explainContent" style="margin-top:15px;"></div>
+
+</div>
+
+<script>
+window.scrollTo(0, 0);
+
+function getAllText() {
+    return document.querySelector(".notes-content").innerText;
+}
+
+async function playAudio() {
+    const text = getAllText();
+    if (!text || text.trim().length === 0) return;
+
+    try {
+        const res = await fetch("/text-to-speech", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ text })
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            console.error("Server Error:", errorData.error);
+            alert("Error generating audio: " + errorData.error);
+            return;
+        }
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        
+        audio.onended = () => window.URL.revokeObjectURL(url); // Clean up memory
+        await audio.play();
+
+    } catch (err) {
+        console.error("Fetch Error:", err);
+    }
+}
+
+async function summarizeNotes() {
+    const text = document.querySelector(".notes-content").innerText;
+
+    const res = await fetch("/summarize", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ text })
+    });
+
+    const data = await res.json();
+
+    const box = document.getElementById("summaryBox");
+    box.style.display = "block";
+
+    // 🔥 CLEAN + FORMAT TEXT
+    let cleaned = data.summary
+        .replace(/\*\*/g, '')     // remove **
+        .replace(/\*/g, '')       // remove *
+        .replace(/\+/g, '•')      // replace + with bullets
+        .replace(/\n/g, '<br>');  // line breaks
+
+    box.innerHTML = `
+        <div class="summary-title">🧠 Smart Summary</div>
+        <div class="summary-content">${cleaned}</div>
+    `;
+}
+
+let selectedSnippet = "";
+
+document.querySelector(".notes-content").addEventListener("mouseup", function (e) {
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+    console.log("Selected:", selectedText);
+
+    const btn = document.getElementById("explainBtn");
+
+    if (selectedText.length > 20) {
+        selectedSnippet = selectedText;
+
+        // 🔥 Position button near selection
+        const rect = selection.getRangeAt(0).getBoundingClientRect();
+
+        btn.style.display = "block";
+        btn.style.top = (window.scrollY + rect.bottom + 10) + "px";
+        btn.style.left = (window.scrollX + rect.right - 80) + "px";
+        
+    } else {
+        // 
+        btn.style.display = "block";
+    }
+});
+
+async function explainText() {
+    if (!selectedSnippet || selectedSnippet.length < 10) {
+        alert("Please highlight some text first.");
+        return;
+    }
+
+    const contentEl = document.getElementById("explainContent");
+    contentEl.innerHTML = "Loading explanation...";
+
+    const res = await fetch("/explain", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ text: selectedSnippet })
+    });
+
+    const data = await res.json();
+
+    contentEl.innerHTML = marked.parse(data.explanation);
+    document.getElementById("explainModal").style.display = "block";
+}
+
+function closeExplain() {
+    document.getElementById("explainModal").style.display = "none";
+    document.getElementById("explainBtn").style.display = "none";
+}
+</script>
+
+{% endblock %}

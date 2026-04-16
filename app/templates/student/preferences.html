@@ -1,51 +1,87 @@
-
 {% extends "student/dashboard_base.html" %}
 {% block content %}
-
 
 <style>
 .preference-wrapper {
     min-height: 100vh;
-    background: #f4f6f9;
-    padding: 60px 0;
+    background: linear-gradient(135deg, #f4f6f9 0%, #eef2ff 100%);
+    padding: 70px 0;
 }
 
 .preference-card {
-    max-width: 850px;
+    max-width: 880px;
     margin: auto;
-    border-radius: 18px;
+    border-radius: 20px;
+    border: none;
 }
 
 .section-title {
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     margin-bottom: 6px;
     color: #1e3a8a;
+    letter-spacing: 0.3px;
+}
+
+.section-subtext {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-bottom: 6px;
 }
 
 .compact-group {
-    margin-bottom: 18px;
+    margin-bottom: 20px;
+}
+
+.hero-title {
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: #111827;
+}
+
+.hero-subtitle {
+    font-size: 0.95rem;
+    color: #6b7280;
+    max-width: 640px;
+    margin: auto;
 }
 </style>
 
 <div class="preference-wrapper">
 <div class="container">
 
-    <div class="card shadow preference-card">
-        <div class="card-body p-4">
+    <div class="card shadow-lg preference-card">
+        <div class="card-body p-5">
 
-            <h3 class="text-center mb-2">
-                Personalized Course Configuration
-            </h3>
-            <p class="text-center text-muted mb-4">
-                The system will generate a complete course package tailored to your preferences.
-            </p>
+            {% if existing %}
+                <h3 class="text-center hero-title mb-3">
+                    <i class="fa-solid fa-pen-to-square text-primary me-2"></i>
+                    Update Your Learning Preferences
+                </h3>
+
+                <p class="text-center hero-subtitle mb-5">
+                    Refine your learning pathway. Update your preferences to generate a more targeted and effective curriculum that aligns with your evolving goals.
+                </p>
+            {% else %}
+                <h3 class="text-center hero-title mb-3">
+                    Architect Your Intelligent Learning Blueprint
+                </h3>
+
+                <p class="text-center hero-subtitle mb-5">
+                    Mastery does not happen by accident — it is designed. 
+                    Define your direction with clarity and intention, and we will construct a rigorous, outcome-driven course pathway aligned precisely with your ambitions, pace, and cognitive style. 
+                    The precision you provide here directly shapes the quality and depth of your personalized curriculum.
+                </p>
+            {% endif %}
 
             <form method="POST">
 
                 <!-- DOMAIN -->
                 <div class="compact-group">
-                    <label class="section-title">Domain</label>
+                    <label class="section-title">Primary Domain of Focus</label>
+                    <div class="section-subtext">
+                        Select the core discipline where you intend to develop structured expertise.
+                    </div>
                     <select name="domain" class="form-select" required>
                         <option value="">Select Domain</option>
                         <option>Software Engineering</option>
@@ -59,17 +95,25 @@
 
                 <!-- TOPIC -->
                 <div class="compact-group">
-                    <label class="section-title">Course Topic</label>
-                    <input type="text" name="topic" class="form-control"
-                           placeholder="e.g., Agile Development, Network Security"
-                           required>
+                    <label class="section-title">Strategic Course Topic</label>
+                    <div class="section-subtext">
+                        Define the exact area of concentration within your selected domain.
+                    </div>
+                    <input type="text" name="topic" 
+                        value="{{ existing.topic if existing else '' }}"
+                        class="form-control"
+                        placeholder="e.g., Scalable System Architecture, Advanced Network Security"
+                        required>
                 </div>
 
                 <div class="row">
 
                     <!-- GOAL -->
                     <div class="col-md-6 compact-group">
-                        <label class="section-title">Learning Objective</label>
+                        <label class="section-title">Primary Learning Objective</label>
+                        <div class="section-subtext">
+                            What measurable outcome are you aiming for?
+                        </div>
                         <select name="goal" class="form-select">
                             <option>Foundational Understanding</option>
                             <option>Professional Skill Development</option>
@@ -81,11 +125,20 @@
 
                     <!-- LEVEL -->
                     <div class="col-md-6 compact-group">
-                        <label class="section-title">Complexity Level</label>
+                        <label class="section-title">Complexity & Depth Level</label>
+                        <div class="section-subtext">
+                            Select the intellectual depth that matches your current proficiency.
+                        </div>
                         <select name="level" class="form-select">
-                            <option>Beginner</option>
-                            <option>Intermediate</option>
-                            <option>Advanced</option>
+                            <option {% if existing and existing.level == "Beginner" %}selected{% endif %}>
+                                Beginner
+                            </option>
+                            <option {% if existing and existing.level == "Intermediate" %}selected{% endif %}>
+                                Intermediate
+                            </option>
+                            <option {% if existing and existing.level == "Advanced" %}selected{% endif %}>
+                                Advanced
+                            </option>
                         </select>
                     </div>
 
@@ -95,9 +148,13 @@
 
                     <!-- DURATION -->
                     <div class="col-md-6 compact-group">
-                        <label class="section-title">Study Duration (Weeks)</label>
+                        <label class="section-title">Target Study Duration (Weeks)</label>
+                        <div class="section-subtext">
+                            Define your intended commitment window for structured progress.
+                        </div>
                         <input type="number" name="duration"
                                min="1" max="24"
+                               value="{{ existing.duration if existing else '' }}"
                                class="form-control"
                                placeholder="e.g., 6">
                     </div>
@@ -105,8 +162,11 @@
                     <!-- LEARNING PREFERENCE -->
                     <div class="col-md-6 compact-group">
                         <label class="section-title">
-                            Learning Preference (Affects Emphasis)
+                            Cognitive Learning Preference
                         </label>
+                        <div class="section-subtext">
+                            This determines how theoretical depth and practical application are balanced.
+                        </div>
                         <select name="learning_preference" class="form-select">
                             <option>Theory-Oriented</option>
                             <option>Practice-Oriented</option>
@@ -119,16 +179,19 @@
 
                 <!-- PRIOR KNOWLEDGE -->
                 <div class="compact-group">
-                    <label class="section-title">Prior Knowledge (Optional)</label>
+                    <label class="section-title">Prior Knowledge & Background (Optional)</label>
+                    <div class="section-subtext">
+                        Briefly describe your current exposure, experience, or technical familiarity.
+                    </div>
                     <textarea name="prior_knowledge"
-                              rows="2"
+                              rows="3"
                               class="form-control"
-                              placeholder="Briefly describe your background..."></textarea>
+                              placeholder="Example: Completed introductory programming courses, basic understanding of networking principles...">{{ existing.prior_knowledge if existing else '' }}</textarea>
                 </div>
 
-                <div class="text-center mt-4">
-                    <button type="submit" class="btn btn-primary px-4">
-                        Save Preferences
+                <div class="text-center mt-5">
+                    <button type="submit" class="btn btn-primary px-5 py-2">
+                        Generate My Personalized Learning Framework
                     </button>
                 </div>
 

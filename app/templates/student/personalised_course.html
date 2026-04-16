@@ -1,12 +1,173 @@
 {% extends "student/dashboard_base.html" %}
 {% block content %}
-    <div class="container">
-        <h2> Here is your a course based on your profile </h2>
 
-        {% if user_preferences %}
-            <h6> Preferences found </h6>
-        {% else %}
-            <h6> Preferences not found </h6>
-        {% endif %}
+<style>
+.generate-wrapper {
+    max-width: 900px;
+    margin: auto;
+}
+
+.generate-hero {
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.generate-title {
+    font-weight: 800;
+    font-size: 1.6rem;
+}
+
+.generate-subtitle {
+    color: #6b7280;
+    font-size: 0.95rem;
+    max-width: 600px;
+    margin: auto;
+}
+
+.status-card {
+    border-radius: 18px;
+    padding: 30px;
+    text-align: center;
+}
+</style>
+
+<div class="container generate-wrapper">
+
+    <!-- Hero Section -->
+    <div class="generate-hero shadow-sm">
+
+        <h2 class="generate-title mb-3">
+            <i class="fa-solid fa-wand-magic-sparkles text-primary me-2"></i>
+            Your AI-Structured Course Blueprint
+        </h2>
+
+        <p class="generate-subtitle">
+            Based on your academic profile and strategic preferences, we are preparing a rigorously structured course pathway engineered for measurable mastery and long-term competence.
+        </p>
+
     </div>
+
+    <!-- Preference Status -->
+    {% if user_preferences %}
+
+        <div class="status-card shadow-sm border-0 bg-white">
+            
+            <form method="POST" action="/learner_generate_course">
+                
+                <div class="mb-4 text-start">
+                    <label class="form-label fw-bold">
+                        <i class="fa-solid fa-book-open me-2 text-primary"></i>
+                        Course Topic
+                    </label>
+                    <input type="text" 
+                           name="topic" 
+                           class="form-control" 
+                           value="{{ topic if topic else (user_preferences.topic if user_preferences.topic else '') }}"
+                           placeholder="Enter specific topic (e.g., Machine Learning, Web Development)"
+                           required>
+                    <small class="text-muted">
+                        This will be the main focus of your personalized course
+                    </small>
+                </div>
+
+                <div class="row mb-4 text-start">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="fa-solid fa-layer-group me-2 text-success"></i>
+                            Domain
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               value="{{ user_preferences.domain[0] if user_preferences.domain and user_preferences.domain|length > 0 else 'General' }}"
+                               readonly>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="fa-solid fa-signal me-2 text-info"></i>
+                            Level
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               value="{{ user_preferences.level if user_preferences.level else 'Beginner' }}"
+                               readonly>
+                    </div>
+                </div>
+
+                <div class="row mb-4 text-start">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="fa-solid fa-bullseye me-2 text-warning"></i>
+                            Goal
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               value="{{ user_preferences.goal if user_preferences.goal else 'Professional Skill Development' }}"
+                               readonly>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="fa-solid fa-clock me-2 text-danger"></i>
+                            Duration (Weeks)
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               value="{{ user_preferences.duration if user_preferences.duration else '4' }}"
+                               readonly>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mb-4">
+                    <i class="fa-solid fa-circle-info me-2"></i>
+                    <strong>AI-Powered Generation:</strong> Your course will be generated using:
+                    <ul class="mb-0 mt-2">
+                        <li>Your saved learning preferences</li>
+                        <li>Your search behavior and history</li>
+                        <li>Industry best practices for {{ user_preferences.domain[0] if user_preferences.domain and user_preferences.domain|length > 0 else 'your domain' }}</li>
+                    </ul>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow-sm">
+                        <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
+                        Generate My Personalized Course
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+    {% else %}
+
+        <div class="status-card shadow-sm border border-warning bg-light">
+
+            <div class="mb-3 text-warning">
+                <i class="fa-solid fa-triangle-exclamation fa-2x"></i>
+            </div>
+
+            <h5 class="fw-bold mb-2">
+                Preferences Not Found
+            </h5>
+
+            <p class="text-muted small mb-3">
+                To construct a precise, mastery-driven course experience, we require your academic preferences. 
+                Define your objectives and learning parameters to unlock a fully customized curriculum.
+            </p>
+
+            <a href="/set_preferences" class="btn btn-warning fw-semibold px-4">
+                <i class="fa-solid fa-sliders me-2"></i>
+                Configure Preferences
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
 {% endblock %}
