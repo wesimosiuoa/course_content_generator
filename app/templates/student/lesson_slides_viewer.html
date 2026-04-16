@@ -1,0 +1,269 @@
+
+{% extends "student/dashboard_base.html" %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Course Slides</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .slides-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .slides-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 15px;
+        }
+        .slides-header h2 {
+            margin: 0;
+            color: #333;
+        }
+        .slides-viewer {
+            position: relative;
+            width: 100%;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #slideImage {
+            max-width: 100%;
+            max-height: 600px;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .slide-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            flex-wrap: wrap;
+        }
+        .slide-counter {
+            font-weight: bold;
+            color: #333;
+            min-width: 120px;
+            text-align: center;
+            font-size: 16px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .action-buttons a {
+            flex: 1;
+            min-width: 200px;
+        }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .info-box p {
+            margin: 0;
+            color: #1565c0;
+        }
+        .loading-spinner {
+            text-align: center;
+        }
+        .spinner-border {
+            color: #2196F3;
+        }
+        .error-message {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            color: #c62828;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="slides-container">
+            <div class="slides-header">
+                <h2>📊 {{ title }}</h2>
+                <a href="{{ url_for('main.view_my_course', course_id=course_id) }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left me-2"></i> Back to Course
+                </a>
+            </div>
+
+            <!-- Info Box -->
+            <div class="info-box">
+                <p><strong>📎 Presentation File:</strong> {{ filename }}</p>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-message" id="errorMessage"></div>
+
+            <!-- Loading Spinner -->
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading presentation...</span>
+                </div>
+                <p class="mt-3">Loading presentation...</p>
+            </div>
+
+            <!-- Main Viewer -->
+            <div class="slides-viewer" id="slidesViewer" style="display: none;">
+                <img id="slideImage" src="" alt="Slide">
+            </div>
+
+            <!-- Controls -->
+            <div class="slide-controls" id="slideControls" style="display: none;">
+                <button class="btn btn-primary btn-sm" id="prevBtn" onclick="previousSlide()">
+                    <i class="fa-solid fa-chevron-left"></i> Previous
+                </button>
+                <div class="slide-counter">
+                    <span id="currentSlide">0</span> / <span id="totalSlides">0</span>
+                </div>
+                <button class="btn btn-primary btn-sm" id="nextBtn" onclick="nextSlide()">
+                    Next <i class="fa-solid fa-chevron-right"></i>
+                </button>
+                <button class="btn btn-info btn-sm" id="fullscreenBtn" onclick="toggleFullscreen()">
+                    <i class="fa-solid fa-expand"></i> Fullscreen
+                </button>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{{ url_for('main.download_lesson_pptx', course_id=course_id, module_index=module_index, lesson_index=lesson_index) }}" 
+                   class="btn btn-success">
+                    <i class="fa-solid fa-download me-2"></i> Download Presentation
+                </a>
+                <a href="{{ url_for('main.view_my_course', course_id=course_id) }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left me-2"></i> Back to Course Content
+                </a>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="mt-4 p-3 bg-light rounded">
+                <p class="text-muted small mb-0">
+                    <i class="fa-solid fa-lightbulb me-2"></i>
+                    <strong>Tip:</strong> Use Previous/Next buttons or arrow keys to navigate through slides. Click Fullscreen for a larger view.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    
+    <script>
+        let slides = [];
+        let currentSlideIndex = 0;
+        
+        // Load presentation
+        async function loadPresentation() {
+            try {
+                const response = await fetch('{{ url_for("main.serve_lesson_pptx", course_id=course_id, module_index=module_index, lesson_index=lesson_index) }}');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load presentation');
+                }
+                
+                const data = await response.json();
+                
+                if (!data.success || !data.slides || data.slides.length === 0) {
+                    throw new Error(data.error || 'No slides found in presentation');
+                }
+                
+                slides = data.slides;
+                
+                // Update UI
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('slidesViewer').style.display = 'flex';
+                document.getElementById('slideControls').style.display = 'flex';
+                document.getElementById('totalSlides').textContent = slides.length;
+                
+                // Display first slide
+                currentSlideIndex = 0;
+                displaySlide(0);
+                
+            } catch (error) {
+                console.error('Error loading presentation:', error);
+                document.getElementById('loadingSpinner').style.display = 'none';
+                const errorDiv = document.getElementById('errorMessage');
+                errorDiv.textContent = `Error: ${error.message}. Try downloading the file instead.`;
+                errorDiv.style.display = 'block';
+            }
+        }
+        
+        // Display a specific slide
+        function displaySlide(index) {
+            if (index < 0 || index >= slides.length) {
+                return;
+            }
+            
+            currentSlideIndex = index;
+            document.getElementById('currentSlide').textContent = index + 1;
+            document.getElementById('slideImage').src = slides[index].data;
+            
+            // Update button states
+            document.getElementById('prevBtn').disabled = index === 0;
+            document.getElementById('nextBtn').disabled = index === slides.length - 1;
+        }
+        
+        function previousSlide() {
+            if (currentSlideIndex > 0) {
+                displaySlide(currentSlideIndex - 1);
+            }
+        }
+        
+        function nextSlide() {
+            if (currentSlideIndex < slides.length - 1) {
+                displaySlide(currentSlideIndex + 1);
+            }
+        }
+        
+        function toggleFullscreen() {
+            const viewer = document.getElementById('slidesViewer');
+            if (!document.fullscreenElement) {
+                viewer.requestFullscreen().catch(err => {
+                    alert(`Fullscreen not available: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') previousSlide();
+        });
+        
+        // Load on page load
+        window.addEventListener('load', loadPresentation);
+    </script>
+</body>
+</html>
+{% endblock %}

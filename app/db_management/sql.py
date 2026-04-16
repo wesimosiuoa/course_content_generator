@@ -5,6 +5,11 @@ def insert (connection, query, params=None):
     try:
         cursor.execute(query, params)
         connection.commit()
+        row_id = cursor.lastrowid
+        if row_id is None:
+            # Ensure fallback for drivers that don't expose lastrowid reliably
+            row_id = getattr(connection, 'insert_id', lambda: None)()
+        return row_id
     except Exception as e:
         connection.rollback()
         raise e

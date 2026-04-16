@@ -1,0 +1,215 @@
+{% extends "student/dashboard_base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Final Assessment</h2>
+    
+    <div id="loading" class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Loading final assessment...</p>
+    </div>
+    
+    <div id="assessment-container" style="display: none;">
+        <div id="assessment-info" class="alert alert-warning">
+            <h5>⚠️ Important</h5>
+            <p>This is the final assessment for the course. Your responses will determine 60% of your final grade.</p>
+            <p class="mb-0"><strong>Passing Grade:</strong> 70% (Certificate required)</p>
+        </div>
+        
+        <div id="questions-container"></div>
+        
+        <div class="mt-4">
+            <button id="submit-btn" class="btn btn-primary btn-lg" onclick="confirmSubmit()">
+                Submit Final Assessment
+            </button>
+            <a href="/student_dashboard" class="btn btn-secondary btn-lg">Save and Exit</a>
+        </div>
+    </div>
+    
+    <div id="result-container" style="display: none;">
+        <div class="alert alert-success">
+            <h4>Final Assessment Submitted!</h4>
+            <p>Your final assessment has been submitted for evaluation.</p>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">What Happens Next?</h5>
+                <ul>
+                    <li>The instructor will review your responses</li>
+                    <li>Your final grade will be calculated (40% Module Assessments + 60% Final Exam)</li>
+                    <li>If you score 70% or above, you will receive a Certificate of Completion</li>
+                    <li>You'll be notified when grading is complete</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <a href="/student_dashboard" class="btn btn-primary">Back to Dashboard</a>
+        </div>
+    </div>
+    
+    <div id="error-container" class="alert alert-danger" style="display: none;">
+        <p id="error-message"></p>
+    </div>
+</div>
+
+<style>
+    .final-question-block {
+        background-color: #f8f9fa;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        border-left: 4px solid #fd7e14;
+    }
+    
+    .final-question-block h5 {
+        margin-bottom: 15px;
+        color: #fd7e14;
+    }
+    
+    .final-question-block textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 3px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .score-info {
+        background-color: #fff3cd;
+        padding: 10px;
+        border-radius: 3px;
+        margin-top: 10px;
+        font-size: 0.9em;
+    }
+</style>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseId = urlParams.get('course');
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        loadFinalAssessment();
+    });
+    
+    function loadFinalAssessment() {
+        fetch(`/assessment/final/${courseId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    displayAssessment(data.data);
+                } else {
+                    showError('Failed to load final assessment');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Error loading assessment. Please try again.');
+            });
+    }
+    
+    function displayAssessment(assessmentData) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('assessment-container').style.display = 'block';
+        
+        const questionsContainer = document.getElementById('questions-container');
+        questionsContainer.innerHTML = '';
+        
+        assessmentData.questions.forEach((question, index) => {
+            const questionBlock = document.createElement('div');
+            questionBlock.className = 'final-question-block';
+            
+            questionBlock.innerHTML = `
+                <h5>Question ${index + 1}</h5>
+                <p><strong>${question.question}</strong></p>
+                <p style="font-size: 0.9em; color: #666;">Max Score: ${question.max_score}</p>
+                <textarea id="answer_${question.id}" placeholder="Type your answer here..." 
+                          rows="8" required></textarea>
+            `;
+            
+            questionsContainer.appendChild(questionBlock);
+        });
+    }
+    
+    function confirmSubmit() {
+        const confirmed = confirm(
+            'Are you sure you want to submit your final assessment?\n\n' +
+            'Once submitted, you cannot make changes.\n' +
+            'Your instructor will review and grade your responses.'
+        );
+        
+        if (confirmed) {
+            submitAssessment();
+        }
+    }
+    
+    function submitAssessment() {
+        const questions = document.querySelectorAll('[id^="answer_"]');
+        const responses = [];
+        let allAnswered = true;
+        
+        questions.forEach(textarea => {
+            const answerId = textarea.id.replace('answer_', '');
+            const answerText = textarea.value.trim();
+            
+            if (!answerText) {
+                allAnswered = false;
+            } else {
+                responses.push({
+                    'final_assessment_id': parseInt(answerId),
+                    'answer_text': answerText
+                });
+            }
+        });
+        
+        if (!allAnswered) {
+            showError('Please answer all questions before submitting');
+            return;
+        }
+        
+        // Submit all responses
+        Promise.all(responses.map(response => {
+            const payload = {
+                course_id: parseInt(courseId),
+                final_assessment_id: response.final_assessment_id,
+                answer_text: response.answer_text
+            };
+            
+            return fetch('/assessment/final/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+        }))
+        .then(responses => Promise.all(responses.map(r => r.json())))
+        .then(data => {
+            if (data.every(d => d.status === 'success')) {
+                displayResult();
+            } else {
+                showError('Failed to submit some answers');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('Error submitting assessment. Please try again.');
+        });
+    }
+    
+    function displayResult() {
+        document.getElementById('assessment-container').style.display = 'none';
+        document.getElementById('result-container').style.display = 'block';
+    }
+    
+    function showError(message) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('assessment-container').style.display = 'none';
+        document.getElementById('error-container').style.display = 'block';
+        document.getElementById('error-message').textContent = message;
+    }
+</script>
+{% endblock %}
