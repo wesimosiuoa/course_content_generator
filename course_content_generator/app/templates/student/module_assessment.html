@@ -1,0 +1,1027 @@
+{% extends "student/dashboard_base.html" %}
+
+{% block content %}
+<style>
+:root{
+    --ms-blue:#2563eb;
+    --ms-blue-700:#1d4ed8;
+    --ms-blue-50:#eff6ff;
+
+    --ms-word:#185abd;
+    --ms-ppt:#d24726;
+    --ms-success:#16a34a;
+    --ms-success-bg:#ecfdf3;
+    --ms-warning:#c08400;
+    --ms-warning-bg:#fff8e1;
+    --ms-danger:#dc2626;
+    --ms-danger-bg:#fef2f2;
+    --ms-info:#0ea5e9;
+    --ms-info-bg:#f0f9ff;
+
+    --gray-25:#fcfcfd;
+    --gray-50:#f8fafc;
+    --gray-100:#f1f5f9;
+    --gray-200:#e2e8f0;
+    --gray-300:#cbd5e1;
+    --gray-400:#94a3b8;
+    --gray-500:#64748b;
+    --gray-700:#334155;
+    --gray-900:#0f172a;
+
+    --radius-xl:20px;
+    --radius-lg:16px;
+    --radius-md:12px;
+
+    --shadow-sm:0 1px 2px rgba(15, 23, 42, 0.05);
+    --shadow-md:0 8px 24px rgba(15, 23, 42, 0.06);
+    --shadow-lg:0 16px 36px rgba(15, 23, 42, 0.08);
+}
+
+.container{
+    max-width: 1120px;
+}
+
+.assessment-shell{
+    background:#fff;
+    color:var(--gray-900);
+    font-family:"Segoe UI", Inter, system-ui, -apple-system, sans-serif;
+}
+
+/* Header */
+.assessment-hero{
+    background:#fff;
+    border:1px solid var(--gray-200);
+    border-radius:var(--radius-xl);
+    box-shadow:var(--shadow-md);
+    padding:24px;
+    margin-bottom:18px;
+}
+
+.assessment-hero-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:18px;
+    flex-wrap:wrap;
+}
+
+.assessment-hero-main{
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+}
+
+.assessment-icon{
+    width:48px;
+    height:48px;
+    border-radius:14px;
+    border:1px solid #dbeafe;
+    background:linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+    color:var(--ms-blue);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+}
+
+.assessment-title{
+    margin:0;
+    font-size:1.45rem;
+    font-weight:700;
+    color:var(--gray-900);
+    line-height:1.2;
+}
+
+.assessment-subtitle{
+    margin-top:6px;
+    color:var(--gray-500);
+    font-size:.96rem;
+}
+
+.hero-chips{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.hero-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:7px 12px;
+    border-radius:999px;
+    border:1px solid var(--gray-200);
+    background:#fff;
+    color:var(--gray-700);
+    font-size:.82rem;
+    font-weight:600;
+}
+
+.hero-chip.primary{
+    border-color:#bfdbfe;
+    background:#eff6ff;
+    color:var(--ms-blue);
+}
+
+.hero-chip.warning{
+    border-color:#fde68a;
+    background:#fffbeb;
+    color:#a16207;
+}
+
+/* Panels */
+.surface-card{
+    background:#fff;
+    border:1px solid var(--gray-200);
+    border-radius:var(--radius-xl);
+    box-shadow:var(--shadow-sm);
+    padding:20px;
+    margin-bottom:18px;
+}
+
+.info-panel{
+    background:linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    border:1px solid #dbeafe;
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:18px;
+}
+
+.info-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:12px;
+    margin-bottom:14px;
+}
+
+.info-item{
+    background:#fff;
+    border:1px solid var(--gray-200);
+    border-radius:14px;
+    padding:12px 14px;
+}
+
+.info-label{
+    font-size:.78rem;
+    color:var(--gray-500);
+    font-weight:600;
+    margin-bottom:4px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+}
+
+.info-value{
+    color:var(--gray-900);
+    font-weight:700;
+    font-size:.96rem;
+}
+
+/* Loading */
+.loading-card{
+    text-align:center;
+    padding:42px 24px;
+}
+
+.spinner-ring{
+    width:48px;
+    height:48px;
+    border:4px solid #dbeafe;
+    border-top-color:var(--ms-blue);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+    margin:0 auto 14px;
+}
+
+@keyframes spin{
+    to{ transform:rotate(360deg); }
+}
+
+.loading-title{
+    font-weight:700;
+    color:var(--gray-900);
+    margin-bottom:4px;
+}
+
+.loading-subtitle{
+    color:var(--gray-500);
+    margin:0;
+    font-size:.94rem;
+}
+
+/* Question cards */
+.questions-stack{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+
+.saq-block{
+    background:#fff;
+    border:1px solid var(--gray-200);
+    border-radius:18px;
+    padding:18px;
+    box-shadow:var(--shadow-sm);
+}
+
+.question-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+}
+
+.question-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    background:#eff6ff;
+    color:var(--ms-blue);
+    border:1px solid #bfdbfe;
+    font-size:.82rem;
+    font-weight:700;
+}
+
+.score-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:7px 11px;
+    border-radius:999px;
+    background:#f8fafc;
+    color:var(--gray-700);
+    border:1px solid var(--gray-200);
+    font-size:.8rem;
+    font-weight:700;
+}
+
+.question-text{
+    font-size:1rem;
+    font-weight:700;
+    color:var(--gray-900);
+    margin-bottom:12px;
+    line-height:1.55;
+}
+
+.rubric-info{
+    background:#f8fbff;
+    border:1px solid #dbeafe;
+    border-radius:14px;
+    padding:14px 14px 10px;
+    margin-bottom:14px;
+}
+
+.rubric-title{
+    font-size:.86rem;
+    font-weight:700;
+    color:var(--ms-blue);
+    margin-bottom:8px;
+}
+
+.rubric-info ul{
+    margin:0;
+    padding-left:18px;
+    color:var(--gray-700);
+}
+
+.rubric-info li{
+    margin-bottom:6px;
+    font-size:.92rem;
+}
+
+.answer-label{
+    display:block;
+    font-size:.86rem;
+    font-weight:700;
+    color:var(--gray-700);
+    margin-bottom:8px;
+}
+
+.saq-block textarea,
+#reeval-reason{
+    width:100%;
+    border:1px solid var(--gray-300);
+    border-radius:14px;
+    padding:14px 15px;
+    font-family:"Segoe UI", Inter, sans-serif;
+    font-size:.95rem;
+    line-height:1.6;
+    color:var(--gray-900);
+    background:#fff;
+    resize:vertical;
+    transition:border-color .2s ease, box-shadow .2s ease;
+}
+
+.saq-block textarea:focus,
+#reeval-reason:focus{
+    outline:none;
+    border-color:#93c5fd;
+    box-shadow:0 0 0 4px rgba(37, 99, 235, 0.10);
+}
+
+/* Action bar */
+.action-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-top:22px;
+    padding-top:18px;
+    border-top:1px solid var(--gray-200);
+}
+
+.action-bar-note{
+    font-size:.92rem;
+    color:var(--gray-500);
+}
+
+.btn.btn-primary{
+    background:var(--ms-blue);
+    border-color:var(--ms-blue);
+    color:#fff;
+    border-radius:12px;
+    font-weight:600;
+    box-shadow:none;
+}
+
+.btn.btn-primary:hover,
+.btn.btn-primary:focus{
+    background:var(--ms-blue-700);
+    border-color:var(--ms-blue-700);
+    color:#fff;
+    box-shadow:none;
+}
+
+.btn-soft{
+    background:#fff !important;
+    color:var(--ms-blue) !important;
+    border-color:#bfdbfe !important;
+}
+
+.btn-soft:hover,
+.btn-soft:focus{
+    background:#eff6ff !important;
+    color:var(--ms-blue-700) !important;
+    border-color:#93c5fd !important;
+}
+
+.btn-lg{
+    padding:.8rem 1.15rem;
+}
+
+/* Results */
+.result-banner{
+    background:linear-gradient(180deg, #ffffff 0%, #f5fff8 100%);
+    border:1px solid #bbf7d0;
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:18px;
+}
+
+.result-banner h4{
+    margin:0 0 6px;
+    font-size:1.15rem;
+    font-weight:700;
+    color:#166534;
+}
+
+.result-banner p{
+    margin:0;
+    color:#166534;
+}
+
+.summary-card{
+    background:#fff;
+    border:1px solid var(--gray-200);
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:18px;
+}
+
+.summary-title{
+    font-size:1rem;
+    font-weight:700;
+    color:var(--gray-900);
+    margin-bottom:14px;
+}
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:12px;
+}
+
+.summary-metric{
+    border:1px solid var(--gray-200);
+    border-radius:14px;
+    padding:14px;
+    background:#fff;
+}
+
+.summary-metric-label{
+    color:var(--gray-500);
+    font-size:.82rem;
+    font-weight:600;
+    margin-bottom:6px;
+}
+
+.summary-metric-value{
+    color:var(--gray-900);
+    font-size:1.2rem;
+    font-weight:800;
+}
+
+/* Result detail styling */
+.answer-box{
+    background:#f8fafc;
+    border:1px solid var(--gray-200);
+    border-radius:14px;
+    padding:13px 14px;
+    color:var(--gray-700);
+    line-height:1.7;
+    white-space:pre-wrap;
+    margin-bottom:12px;
+}
+
+.feedback-box{
+    background:#fff;
+    border:1px solid var(--gray-200);
+    border-left:4px solid var(--ms-blue);
+    border-radius:14px;
+    padding:13px 14px;
+    color:var(--gray-700);
+    line-height:1.65;
+}
+
+.result-meta-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+}
+
+.result-score-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:7px 11px;
+    border-radius:999px;
+    background:var(--ms-success-bg);
+    border:1px solid #bbf7d0;
+    color:#166534;
+    font-size:.82rem;
+    font-weight:700;
+}
+
+.result-score-pill.pending{
+    background:#f8fafc;
+    border-color:var(--gray-200);
+    color:var(--gray-500);
+}
+
+.reeval-note{
+    margin-top:14px;
+    background:var(--ms-warning-bg);
+    border:1px solid #fde68a;
+    border-radius:14px;
+    padding:12px 14px;
+    color:#92400e;
+    font-size:.92rem;
+}
+
+/* Reevaluation */
+#reevaluation-container .surface-card{
+    margin-bottom:0;
+}
+
+.reeval-title{
+    font-size:1rem;
+    font-weight:700;
+    color:var(--gray-900);
+    margin-bottom:10px;
+}
+
+.reeval-text{
+    color:var(--gray-500);
+    font-size:.93rem;
+    margin-bottom:14px;
+}
+
+.status-box{
+    background:var(--ms-info-bg);
+    border:1px solid #bae6fd;
+    color:#0c4a6e;
+    border-radius:14px;
+    padding:12px 14px;
+    margin-top:14px;
+    font-size:.92rem;
+    font-weight:600;
+}
+
+/* Error */
+#error-container{
+    background:var(--ms-danger-bg);
+    border:1px solid #fecaca;
+    color:#991b1b;
+    border-radius:18px;
+    padding:16px 18px;
+}
+
+/* Responsive */
+@media (max-width: 768px){
+    .assessment-hero{
+        padding:18px;
+    }
+
+    .assessment-title{
+        font-size:1.18rem;
+    }
+
+    .info-grid,
+    .summary-grid{
+        grid-template-columns:1fr;
+    }
+
+    .surface-card,
+    .saq-block{
+        padding:16px;
+    }
+
+    .action-bar{
+        align-items:stretch;
+    }
+
+    .action-bar .btn{
+        width:100%;
+    }
+}
+</style>
+
+<div class="container assessment-shell mt-4 mb-5">
+
+    <div class="assessment-hero">
+        <div class="assessment-hero-top">
+            <div class="assessment-hero-main">
+                <div class="assessment-icon">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                </div>
+                <div>
+                    <h2 class="assessment-title">Module Assessment — Short Answer Questions</h2>
+                    <div class="assessment-subtitle">
+                        Complete the written assessment for this module. Answers will be reviewed automatically and you may request reevaluation if needed.
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-chips">
+                <span class="hero-chip primary">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    Written assessment
+                </span>
+                <span class="hero-chip warning">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    Auto-graded
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading" class="surface-card loading-card">
+        <div class="spinner-ring"></div>
+        <div class="loading-title">Loading assessment questions</div>
+        <p class="loading-subtitle mb-0">Preparing your module assessment. Please wait...</p>
+    </div>
+
+    <div id="saq-container" style="display: none;">
+        <div id="saq-info" class="info-panel">
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Course</div>
+                    <div class="info-value" id="course-info"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Module</div>
+                    <div class="info-value" id="module-info"></div>
+                </div>
+            </div>
+            <div class="text-muted" style="font-size:.94rem;">
+                Answer each question thoughtfully. Your responses will be reviewed by the LLM grader, and you can request reevaluation after grading if needed.
+            </div>
+        </div>
+
+        <div id="questions-container" class="questions-stack"></div>
+
+        <div class="surface-card">
+            <div class="action-bar">
+                <div class="action-bar-note">
+                    Make sure every answer is completed before submission.
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button id="submit-btn" class="btn btn-primary btn-lg">
+                        <i class="fa-solid fa-paper-plane me-1"></i>
+                        Submit Answers
+                    </button>
+                    <a href="/student_dashboard" class="btn btn-primary btn-soft btn-lg">
+                        <i class="fa-solid fa-arrow-left me-1"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-container" style="display: none;">
+        <div id="result-banner" class="result-banner">
+            <h4>Assessment Completed</h4>
+            <p>Your answers were reviewed by the LLM grader. If you are not satisfied with the result, you can request reevaluation.</p>
+        </div>
+
+        <div id="module-summary" class="summary-card" style="display: none;"></div>
+        <div id="result-details" class="questions-stack"></div>
+
+        <div id="reevaluation-container" class="mt-4" style="display: none;">
+            <div class="surface-card">
+                <div class="reeval-title">Request Reevaluation</div>
+                <div class="reeval-text">
+                    If you believe your answers deserve another review, explain your concerns clearly and submit a reevaluation request.
+                </div>
+
+                <div class="mb-3">
+                    <label for="reeval-reason" class="form-label fw-semibold">Why do you want a reevaluation?</label>
+                    <textarea
+                        id="reeval-reason"
+                        rows="5"
+                        placeholder="Explain why you think the grading should be reviewed."
+                    ></textarea>
+                </div>
+
+                <button id="reeval-submit-btn" class="btn btn-primary">
+                    <i class="fa-solid fa-rotate-right me-1"></i>
+                    Submit Reevaluation Request
+                </button>
+
+                <div id="reeval-status" class="status-box" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="surface-card mt-4">
+            <div class="d-flex justify-content-end">
+                <a href="/student_dashboard" class="btn btn-primary btn-soft">
+                    <i class="fa-solid fa-house me-1"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="error-container" style="display: none;">
+        <p id="error-message" class="mb-0"></p>
+    </div>
+</div>
+
+<script>
+const courseId = {{ course_id }};
+const moduleIndex = {{ module_index }};
+let currentResponseIds = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadAssessment();
+});
+
+function loadAssessment() {
+    if (courseId == null || moduleIndex == null) {
+        showError('Invalid module assessment link.');
+        return;
+    }
+
+    loadExistingResults().then(hasResults => {
+        if (!hasResults) {
+            loadSAQs();
+        }
+    });
+}
+
+function loadSAQs() {
+    fetch(`/assessment/saq/${courseId}/${moduleIndex}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                displaySAQs(data.data);
+            } else {
+                showError('Failed to load assessment questions');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('Error loading assessment. Please try again.');
+        });
+}
+
+function displaySAQs(saqData) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('saq-container').style.display = 'block';
+
+    document.getElementById('course-info').textContent = `Course ${saqData.course_id}`;
+    document.getElementById('module-info').textContent = `Module ${saqData.module_index + 1}`;
+
+    const questionsContainer = document.getElementById('questions-container');
+    questionsContainer.innerHTML = '';
+
+    saqData.questions.forEach((question, index) => {
+        const saqBlock = document.createElement('div');
+        saqBlock.className = 'saq-block';
+
+        let rubricHtml = '';
+        if (question.rubric && Object.keys(question.rubric).length > 0) {
+            rubricHtml = `
+                <div class="rubric-info">
+                    <div class="rubric-title">
+                        <i class="fa-solid fa-list-check me-1"></i>
+                        Grading rubric
+                    </div>
+                    <ul>
+                        ${Object.entries(question.rubric).map(([key, value]) => `<li>${value}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        saqBlock.innerHTML = `
+            <div class="question-top">
+                <span class="question-badge">
+                    <i class="fa-solid fa-circle-question"></i>
+                    Question ${index + 1}
+                </span>
+                <span class="score-badge">
+                    <i class="fa-solid fa-trophy"></i>
+                    Max score: ${question.max_score}
+                </span>
+            </div>
+
+            <div class="question-text">${question.question}</div>
+
+            ${rubricHtml}
+
+            <label class="answer-label" for="answer_${question.id}">
+                Your answer
+            </label>
+            <textarea
+                id="answer_${question.id}"
+                placeholder="Type your answer here..."
+                rows="7"
+                required
+            ></textarea>
+        `;
+
+        questionsContainer.appendChild(saqBlock);
+    });
+}
+
+function loadExistingResults() {
+    return fetch(`/assessment/saq/result/${courseId}/${moduleIndex}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success' && data.data.length > 0) {
+                document.getElementById('loading').style.display = 'none';
+                displayResultData(data.data, data.module_summary);
+                return true;
+            }
+            return false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            return false;
+        });
+}
+
+document.getElementById('submit-btn').addEventListener('click', function() {
+    submitSAQs();
+});
+
+function submitSAQs() {
+    const questions = document.querySelectorAll('[id^="answer_"]');
+    const responses = [];
+    let allAnswered = true;
+
+    questions.forEach(textarea => {
+        const answerId = textarea.id.replace('answer_', '');
+        const answerText = textarea.value.trim();
+
+        if (!answerText) {
+            allAnswered = false;
+        } else {
+            responses.push({
+                saq_id: parseInt(answerId),
+                answer_text: answerText
+            });
+        }
+    });
+
+    if (!allAnswered) {
+        showError('Please answer all questions before submitting.');
+        return;
+    }
+
+    document.getElementById('submit-btn').disabled = true;
+    document.getElementById('submit-btn').innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Submitting...';
+
+    const payload = {
+        course_id: parseInt(courseId),
+        module_index: parseInt(moduleIndex),
+        responses: responses
+    };
+
+    fetch('/assessment/saq/submit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            loadExistingResults().then(hasResults => {
+                if (!hasResults) {
+                    showError('Submission succeeded, but no results were available yet.');
+                }
+            });
+        } else {
+            console.error('Submission error:', data);
+            showError(data.error || 'Failed to submit answers');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showError('Error submitting answers. Please try again.');
+    })
+    .finally(() => {
+        const btn = document.getElementById('submit-btn');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane me-1"></i> Submit Answers';
+        }
+    });
+}
+
+function displayResultData(results, moduleSummary) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('saq-container').style.display = 'none';
+    document.getElementById('result-container').style.display = 'block';
+
+    currentResponseIds = results.map(r => r.id);
+    const resultDetails = document.getElementById('result-details');
+    resultDetails.innerHTML = '';
+
+    const moduleSummaryEl = document.getElementById('module-summary');
+    if (moduleSummary && moduleSummary.module_score_percentage !== null) {
+        moduleSummaryEl.style.display = 'block';
+        moduleSummaryEl.innerHTML = `
+            <div class="summary-title">
+                <i class="fa-solid fa-chart-column me-2"></i>
+                Module Score Summary
+            </div>
+            <div class="summary-grid">
+                <div class="summary-metric">
+                    <div class="summary-metric-label">Lesson quiz average</div>
+                    <div class="summary-metric-value">
+                        ${moduleSummary.quiz_score_percentage !== null ? moduleSummary.quiz_score_percentage.toFixed(1) + '%' : 'N/A'}
+                    </div>
+                </div>
+                <div class="summary-metric">
+                    <div class="summary-metric-label">SAQ average</div>
+                    <div class="summary-metric-value">
+                        ${moduleSummary.saq_score_percentage !== null ? moduleSummary.saq_score_percentage.toFixed(1) + '%' : 'N/A'}
+                    </div>
+                </div>
+                <div class="summary-metric">
+                    <div class="summary-metric-label">Combined module score</div>
+                    <div class="summary-metric-value">
+                        ${moduleSummary.module_score_percentage.toFixed(1)}%
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        moduleSummaryEl.style.display = 'none';
+        moduleSummaryEl.innerHTML = '';
+    }
+
+    results.forEach((result, index) => {
+        const resultBlock = document.createElement('div');
+        resultBlock.className = 'saq-block';
+
+        let reevaluationHtml = '';
+        if (result.reevaluation) {
+            reevaluationHtml = `
+                <div class="reeval-note">
+                    <strong>Reevaluation status:</strong> ${result.reevaluation.status}<br>
+                    <strong>Reason:</strong> ${result.reevaluation.reason}
+                </div>
+            `;
+        }
+
+        const scoreHtml = result.score !== null
+            ? `<span class="result-score-pill"><i class="fa-solid fa-star"></i> LLM Score: ${result.score.toFixed(1)} / ${result.max_score}</span>`
+            : `<span class="result-score-pill pending"><i class="fa-solid fa-clock"></i> Score pending</span>`;
+
+        resultBlock.innerHTML = `
+            <div class="question-top">
+                <span class="question-badge">
+                    <i class="fa-solid fa-circle-question"></i>
+                    Question ${index + 1}
+                </span>
+                ${scoreHtml}
+            </div>
+
+            <div class="question-text">${result.question}</div>
+
+            <div class="result-meta-row"></div>
+
+            <label class="answer-label">Your answer</label>
+            <div class="answer-box">${result.answer}</div>
+
+            <label class="answer-label">Feedback</label>
+            <div class="feedback-box">${result.feedback || 'No feedback provided.'}</div>
+
+            ${reevaluationHtml}
+        `;
+
+        resultDetails.appendChild(resultBlock);
+    });
+
+    const hasPendingOrReviewed = results.some(r => r.reevaluation && r.reevaluation.status === 'pending');
+    if (!hasPendingOrReviewed) {
+        document.getElementById('reevaluation-container').style.display = 'block';
+    } else {
+        document.getElementById('reevaluation-container').style.display = 'none';
+    }
+}
+
+document.getElementById('reeval-submit-btn').addEventListener('click', function() {
+    submitReevaluation();
+});
+
+function submitReevaluation() {
+    const reason = document.getElementById('reeval-reason').value.trim();
+    if (!reason) {
+        showError('Please provide a reason for reevaluation.');
+        return;
+    }
+
+    const btn = document.getElementById('reeval-submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Submitting...';
+
+    fetch('/assessment/saq/reevaluate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            response_ids: currentResponseIds,
+            reason: reason
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const statusBox = document.getElementById('reeval-status');
+            statusBox.style.display = 'block';
+            statusBox.textContent = 'Your reevaluation request has been submitted successfully.';
+            document.getElementById('reeval-reason').value = '';
+            document.getElementById('reevaluation-container').style.display = 'none';
+        } else {
+            console.error('Reevaluation error:', data);
+            showError(data.error || 'Failed to submit reevaluation request.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showError('Error submitting reevaluation request. Please try again.');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-rotate-right me-1"></i> Submit Reevaluation Request';
+    });
+}
+
+function displayResult() {
+    document.getElementById('saq-container').style.display = 'none';
+    document.getElementById('result-container').style.display = 'block';
+}
+
+function showError(message) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('saq-container').style.display = 'none';
+    document.getElementById('result-container').style.display = 'none';
+    document.getElementById('error-container').style.display = 'block';
+    document.getElementById('error-message').textContent = message;
+}
+</script>
+{% endblock %}

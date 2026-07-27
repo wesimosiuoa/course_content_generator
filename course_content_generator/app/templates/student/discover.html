@@ -1,0 +1,285 @@
+{% extends "student/dashboard_base.html" %}
+{% block content %}
+
+<style>
+.section-heading {
+    font-weight: 700;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-card {
+    background: linear-gradient(135deg, #ffffff, #f8faff);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.course-card {
+    border-radius: 16px;
+    transition: all 0.25s ease;
+    border: 1px solid #eef2f7;
+}
+
+.course-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.06);
+}
+
+.generate-box {
+    border-radius: 16px;
+    background: linear-gradient(135deg, #fff7ed, #fffbeb);
+    border: 1px solid #fde68a;
+}
+
+.badge-level {
+    background: #eef2ff;
+    color: #3730a3;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.badge-domain {
+    background: #f0fdf4;
+    color: #15803d;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.course-desc {
+    color: #64748b;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    min-height: 2.6em;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.rating-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.rating-mini {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.rating-mini .stars {
+    color: #f59e0b;
+    letter-spacing: 0.5px;
+}
+
+.rating-mini .muted {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.social-meta {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.empty-section {
+    background: #f8fafc;
+    border: 1px dashed #e2e8f0;
+    border-radius: 14px;
+    padding: 20px;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+</style>
+
+{% macro course_card(course, primary=false) %}
+<div class="col-md-6 col-lg-4">
+    <div class="card course-card shadow-sm border-0 h-100">
+        <div class="card-body d-flex flex-column">
+
+            <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                <div class="d-flex flex-wrap gap-1">
+                    {% if course.level %}
+                        <span class="badge badge-level">{{ course.level }}</span>
+                    {% endif %}
+                    {% if course.domain %}
+                        <span class="badge badge-domain">{{ course.domain }}</span>
+                    {% endif %}
+                </div>
+
+                {% if course.rating and course.rating.has_rating %}
+                    <div class="rating-mini" title="Course rating">
+                        <span class="stars">★</span>
+                        {{ '%.1f'|format(course.rating.average) }}
+                        <span class="muted">/5</span>
+                    </div>
+                {% else %}
+                    <div class="rating-mini muted">
+                        <span class="stars" style="opacity:.35">★</span>
+                        New
+                    </div>
+                {% endif %}
+            </div>
+
+            <h6 class="fw-bold mb-2">
+                {{ course.title }}
+            </h6>
+
+            <p class="course-desc mb-2">
+                {% set desc = course.description or course.overview or (course.content.overview if course.content else '') %}
+                {% if desc %}
+                    {{ desc }}
+                {% else %}
+                    No description available yet — open the course to explore modules and lessons.
+                {% endif %}
+            </p>
+
+            <div class="rating-row mt-auto">
+                <span class="social-meta">
+                    {% if course.rating and course.rating.enrollments is defined %}
+                        <i class="fa-solid fa-users me-1"></i>{{ course.rating.enrollments }} enrolled
+                    {% endif %}
+                    {% if course.rating and course.rating.count %}
+                        · {{ course.rating.count }} review{% if course.rating.count != 1 %}s{% endif %}
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="d-grid gap-2 mt-3">
+                <a href="/enroll_course/{{ course.id }}"
+                   class="btn btn-sm {% if primary %}btn-primary{% else %}btn-outline-success{% endif %} fw-semibold">
+                    <i class="fa-solid fa-user-plus me-1"></i>
+                    Enroll
+                </a>
+                <a href="/view_my_course/{{ course.id }}"
+                   class="btn btn-sm btn-outline-dark fw-semibold">
+                    <i class="fa-solid fa-eye me-1"></i>
+                    View course
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+<div class="container">
+
+    <!-- Empty search state -->
+    {% if request.args.get('query') and not search_results %}
+        <div class="alert generate-box shadow-sm p-4">
+
+            <h6 class="fw-bold mb-2">
+                <i class="fa-solid fa-rocket me-2 text-warning"></i>
+                No unenrolled courses found for "{{ request.args.get('query') }}"
+            </h6>
+
+            <p class="text-muted small mb-3">
+                Nothing new matches this search in the catalog (or you may already be enrolled).
+                Our AI can design a structured course tailored to your level and goals.
+            </p>
+
+            <a href="/learner_generate_course?topic={{ request.args.get('query') }}"
+               class="btn btn-warning fw-semibold px-4">
+                <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
+                Generate Personalized Course
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Search -->
+    <div class="mb-5">
+        <div class="search-card shadow-sm">
+            <form method="GET" action="/discover">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-0">
+                        <i class="fa-solid fa-magnifying-glass text-muted"></i>
+                    </span>
+                    <input type="text"
+                           name="query"
+                           class="form-control border-0"
+                           placeholder="Search for courses, domains, skills..."
+                           value="{{ request.args.get('query', '') }}">
+                    <button class="btn btn-primary px-4 fw-semibold">
+                        Search
+                    </button>
+                </div>
+            </form>
+            <p class="small text-muted mb-0 mt-2">
+                Discover only shows courses you have not enrolled in yet.
+            </p>
+        </div>
+    </div>
+
+    <!-- Search Results -->
+    {% if search_results %}
+        <div class="mb-5">
+            <h5 class="section-heading mb-4">
+                <i class="fa-solid fa-magnifying-glass-chart text-primary"></i>
+                Search Results
+            </h5>
+
+            <div class="row g-4">
+                {% for course in search_results %}
+                    {{ course_card(course, primary=true) }}
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Recommended -->
+    <div class="mb-5">
+        <h5 class="section-heading mb-4">
+            <i class="fa-solid fa-star text-warning"></i>
+            Recommended For You
+        </h5>
+
+        {% if recommended_courses %}
+            <div class="row g-4">
+                {% for course in recommended_courses %}
+                    {{ course_card(course, primary=true) }}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-section">
+                <i class="fa-solid fa-lightbulb me-2 text-warning"></i>
+                No new recommendations right now. You may already be enrolled in matching courses,
+                or you can set preferences / search a topic to generate one.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Trending -->
+    <div class="mb-5">
+        <h5 class="section-heading mb-4">
+            <i class="fa-solid fa-fire text-danger"></i>
+            Trending Courses
+        </h5>
+
+        {% if trending_courses %}
+            <div class="row g-4">
+                {% for course in trending_courses %}
+                    {{ course_card(course, primary=false) }}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-section">
+                <i class="fa-solid fa-fire me-2 text-danger"></i>
+                No trending courses left to explore — you may already be enrolled in the popular ones.
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

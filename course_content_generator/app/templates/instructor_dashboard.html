@@ -1,0 +1,37 @@
+{% include "header.html" %}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
+                    <h2 class="mb-3">Instructor Dashboard</h2>
+                    <p class="text-muted">Welcome, {{ full_name or 'Instructor' }}. This area is for instructor-led review and grading workflows.</p>
+
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-6">
+                            <div class="card border-primary h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Review Reevaluation Requests</h5>
+                                    <p class="card-text">Review pending student reevaluation requests for courses in your field area.</p>
+                                    <a href="/assessment/instructor/reevaluation-requests" class="btn btn-primary">Open Review Queue</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-secondary h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Grade Responses</h5>
+                                    <p class="card-text">Grade short answer and final assessment responses assigned to your domain.</p>
+                                    <a href="/courses" class="btn btn-outline-secondary">Browse Courses</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include "footer.html" %}

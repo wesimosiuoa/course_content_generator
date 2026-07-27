@@ -1,0 +1,264 @@
+{% extends "student/dashboard_base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Lesson Quiz</h2>
+    
+    <div id="loading" class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Loading quiz questions...</p>
+    </div>
+    
+    <div id="quiz-container" style="display: none;">
+        <div id="quiz-info" class="alert alert-info">
+            <p><strong>Course:</strong> <span id="course-info"></span></p>
+            <p><strong>Module:</strong> <span id="module-info"></span></p>
+            <p><strong>Lesson:</strong> <span id="lesson-info"></span></p>
+        </div>
+        
+        <form id="quiz-form">
+            <div id="questions-container"></div>
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">Submit Quiz</button>
+                <button type="reset" class="btn btn-secondary btn-lg">Clear Answers</button>
+            </div>
+        </form>
+    </div>
+    
+    <div id="result-container" style="display: none;">
+        <div class="alert alert-success">
+            <h4>Quiz Completed!</h4>
+            <p id="result-message"></p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Your Score</h5>
+                        <p class="card-text">
+                            <strong id="score-result"></strong> out of 
+                            <strong id="total-questions"></strong> questions
+                        </p>
+                        <p class="card-text">
+                            <strong>Percentage:</strong> <span id="percentage-result">0%</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Status</h5>
+                        <p class="card-text">
+                            <span id="passed-status" class="badge"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <!-- <a href="#" class="btn btn-primary" id="next-lesson-btn">Next Lesson</a> -->
+            <a href="/student_dashboard" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+    
+    <div id="error-container" class="alert alert-danger" style="display: none;">
+        <p id="error-message"></p>
+    </div>
+</div>
+
+<style>
+    .question-block {
+        background-color: #f8f9fa;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        border-left: 4px solid #0d6efd;
+    }
+    
+    .question-block h5 {
+        margin-bottom: 15px;
+        color: #0d6efd;
+    }
+    
+    .option {
+        margin-bottom: 10px;
+        padding: 10px;
+        background-color: white;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    
+    .option:hover {
+        background-color: #e7f3ff;
+    }
+    
+    .option input[type="radio"] {
+        margin-right: 10px;
+    }
+</style>
+
+<script>
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseId = urlParams.get('course') || "{{ course_id }}";
+    const moduleIndex = urlParams.get('module') || "{{ module_index }}";
+    const lessonIndex = urlParams.get('lesson') || "{{ lesson_index }}";
+    
+    // Load quiz on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadQuiz();
+    });
+    
+    function loadQuiz() {
+        fetch(`/assessment/quiz/${courseId}/${moduleIndex}/${lessonIndex}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    displayQuiz(data.data);
+                } else {
+                    showError('Failed to load quiz');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Error loading quiz. Please try again.');
+            });
+    }
+    
+    function displayQuiz(quizData) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('quiz-container').style.display = 'block';
+        
+        // Set quiz info
+        document.getElementById('course-info').textContent = quizData.course_title || `Course ${quizData.course_id}`;
+        document.getElementById('module-info').textContent = quizData.module_title || `Module ${quizData.module_index + 1}`;
+        document.getElementById('lesson-info').textContent = quizData.lesson_title || `Lesson ${quizData.lesson_index + 1}`;
+        
+        // Render questions
+        const questionsContainer = document.getElementById('questions-container');
+        questionsContainer.innerHTML = '';
+        
+        quizData.questions.forEach((question, index) => {
+            const questionBlock = document.createElement('div');
+            questionBlock.className = 'question-block';
+            
+            let optionsHtml = '';
+            question.options.forEach(option => {
+                optionsHtml += `
+                    <div class="option">
+                        <input type="radio" id="option_${question.id}_${option.id}" 
+                               name="question_${question.id}" value="${option.id}">
+                        <label for="option_${question.id}_${option.id}">${option.text}</label>
+                    </div>
+                `;
+            });
+            
+            questionBlock.innerHTML = `
+                <h5>Question ${index + 1}</h5>
+                <p><strong>${question.question}</strong></p>
+                ${optionsHtml}
+            `;
+            
+            questionsContainer.appendChild(questionBlock);
+        });
+    }
+    
+    // Handle form submission
+    document.getElementById('quiz-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitQuiz();
+    });
+    
+    function submitQuiz() {
+        const responses = [];
+        const formData = new FormData(document.getElementById('quiz-form'));
+        
+        // Get all question elements
+        const questionElements = document.querySelectorAll('[name^="question_"]');
+        const uniqueQuestions = new Set();
+        
+        questionElements.forEach(elem => {
+            const questionId = elem.name.replace('question_', '');
+            uniqueQuestions.add(questionId);
+        });
+        
+        // Collect responses
+        uniqueQuestions.forEach(questionId => {
+            const selected = document.querySelector(`input[name="question_${questionId}"]:checked`);
+            if (selected) {
+                responses.push({
+                    'question_id': parseInt(questionId),
+                    'selected_option_id': parseInt(selected.value)
+                });
+            }
+        });
+        
+        if (responses.length === 0) {
+            showError('Please answer all questions before submitting');
+            return;
+        }
+        
+        const payload = {
+            course_id: parseInt(courseId),
+            module_index: parseInt(moduleIndex),
+            lesson_index: parseInt(lessonIndex),
+            responses: responses
+        };
+        
+        fetch('/assessment/quiz/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                displayResult(data.data);
+            } else {
+                showError('Failed to submit quiz');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('Error submitting quiz. Please try again.');
+        });
+    }
+    
+    function displayResult(result) {
+        document.getElementById('quiz-container').style.display = 'none';
+        document.getElementById('result-container').style.display = 'block';
+        
+        document.getElementById('score-result').textContent = result.correct_answers;
+        document.getElementById('total-questions').textContent = result.total_questions;
+        document.getElementById('percentage-result').textContent = result.score_percentage + '%';
+        
+        const statusBadge = document.getElementById('passed-status');
+        if (result.passed) {
+            statusBadge.className = 'badge bg-success';
+            statusBadge.textContent = 'PASSED ✓';
+            document.getElementById('result-message').textContent = 
+                `Great job! You scored ${result.score_percentage}% and passed the quiz.`;
+        } else {
+            statusBadge.className = 'badge bg-danger';
+            statusBadge.textContent = 'FAILED';
+            document.getElementById('result-message').textContent = 
+                `You scored ${result.score_percentage}%. The passing score is 60%.`;
+        }
+    }
+    
+    function showError(message) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('quiz-container').style.display = 'none';
+        document.getElementById('error-container').style.display = 'block';
+        document.getElementById('error-message').textContent = message;
+    }
+</script>
+{% endblock %}

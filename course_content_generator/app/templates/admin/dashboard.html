@@ -1,0 +1,173 @@
+{% include "admin/header.html" %}
+
+<div class="p-4">
+    <div class="header-bar d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+        <div>
+            <p class="text-uppercase text-primary fw-semibold mb-2" style="letter-spacing: 0.18em; font-size: 0.8rem;">Evaluation Framework</p>
+            <h2 class="mb-1">Performance metrics matrix</h2>
+            <p class="text-muted mb-0">
+                Automatic vs manual evaluation of generation time, completeness, relevance,
+                hallucination risk, usability (SUS), and learning gain — plus LLM accuracy KPIs.
+            </p>
+        </div>
+        <div class="text-end d-flex flex-column align-items-end gap-2">
+            <div>
+                <div class="text-muted">Signed in as</div>
+                <div class="fw-semibold">{{ full_name or session.get('full_name') }}</div>
+                <div class="text-muted small">Admin</div>
+            </div>
+            <a href="{{ url_for('main.sus_survey') }}" class="btn btn-sm btn-outline-primary">
+                <i class="fa-solid fa-clipboard-list me-1"></i> Take SUS survey
+            </a>
+        </div>
+    </div>
+
+    {# ========== Automatic vs Manual matrix ========== #}
+    <div class="card card-soft p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-2 mb-3">
+            <div>
+                <h5 class="fw-semibold mb-1">Evaluation matrix</h5>
+                <p class="text-muted small mb-0">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle me-1">Automatic</span>
+                    computed live from system data
+                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle ms-2 me-1">Manual</span>
+                    expert rating or human survey (❌ = not used / no data)
+                </p>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="min-width: 160px;">Metric</th>
+                        <th style="min-width: 220px;">Automatic</th>
+                        <th style="min-width: 200px;">Manual</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in evaluation_matrix %}
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">
+                                {% if row.icon %}<i class="fa-solid {{ row.icon }} text-primary me-1"></i>{% endif %}
+                                {{ row.metric }}
+                                {% if row.optional %}
+                                    <span class="badge text-bg-light border ms-1">Optional</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            {% if row.automatic_enabled %}
+                                <span class="fw-semibold text-success">{{ row.automatic }}</span>
+                            {% else %}
+                                <span class="text-muted">❌</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.manual_enabled %}
+                                <span class="text-dark">{{ row.manual }}</span>
+                            {% else %}
+                                <span class="text-muted">❌ N/A</span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted">{{ row.detail or row.description }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-muted text-center py-4">Evaluation matrix unavailable.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# ========== Metric cards ========== #}
+    <div class="row g-4 mb-4">
+        {% for row in evaluation_matrix %}
+        <div class="col-md-6 col-xl-4">
+            <div class="card metric-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="metric-label">{{ row.metric }}</div>
+                    {% if row.icon %}<i class="fa-solid {{ row.icon }} text-primary opacity-75"></i>{% endif %}
+                </div>
+                <div class="metric-value mb-1" style="font-size: 1.35rem; line-height: 1.3;">{{ row.automatic }}</div>
+                <div class="small mb-2">
+                    <span class="text-muted">Manual:</span>
+                    <span class="fw-semibold">{{ row.manual }}</span>
+                </div>
+                <div class="metric-description">{{ row.description }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {# ========== Expert ratings CTA ========== #}
+    <div class="card card-soft p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+            <div>
+                <h5 class="fw-semibold mb-2">Expert (manual) ratings</h5>
+                <p class="text-muted small mb-0">
+                    Completeness, Relevance, Hallucination, Learning Gain, and expert Usability are rated by
+                    <strong>admins / instructors / domain experts</strong> on a dedicated workspace with rubrics.
+                    Generation Time stays automatic only (manual ❌). Learner SUS is a separate survey.
+                </p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('main.admin_expert_ratings') }}" class="btn btn-primary">
+                    <i class="fa-solid fa-user-graduate me-2"></i>Open expert ratings
+                </a>
+                <a href="{{ url_for('main.sus_survey') }}" class="btn btn-outline-primary">
+                    <i class="fa-solid fa-clipboard-list me-2"></i>SUS survey
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {# ========== Existing LLM accuracy KPIs ========== #}
+    {% if metrics %}
+    <div class="mb-2">
+        <h5 class="fw-semibold mb-1">LLM accuracy KPIs</h5>
+        <p class="text-muted small">Structure validation, ROUGE, quiz rubric, and grading reliability.</p>
+    </div>
+    <div class="row g-4">
+        {% for metric in metrics %}
+            <div class="col-md-6">
+                <div class="card metric-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="metric-label">{{ metric.label }}</div>
+                        {% if metric.icon %}
+                            <i class="fa-solid {{ metric.icon }} text-primary opacity-75"></i>
+                        {% endif %}
+                    </div>
+                    <div class="metric-value mb-2" style="font-size: 1.65rem; line-height: 1.25;">{{ metric.display_value }}</div>
+                    {% if metric.detail %}
+                        <div class="small text-primary fw-semibold mb-2">{{ metric.detail }}</div>
+                    {% endif %}
+                    <div class="metric-description">{{ metric.description }}</div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card card-soft mt-4 p-4">
+        <h5 class="fw-semibold mb-3">How the matrix is measured</h5>
+        <div class="row g-3 text-muted small">
+            <div class="col-md-6">
+                <p class="mb-2"><strong class="text-dark">Generation Time</strong> — Automatic wall-clock timing of LLM calls (course / notes / quiz). Manual ❌.</p>
+                <p class="mb-2"><strong class="text-dark">Completeness</strong> — Schema keys, module/lesson density, outcomes, resources. Manual expert /5 optional.</p>
+                <p class="mb-0"><strong class="text-dark">Relevance</strong> — Term alignment of course content with learner preferences/domain. Manual expert /5 optional.</p>
+            </div>
+            <div class="col-md-6">
+                <p class="mb-2"><strong class="text-dark">Hallucination Rate</strong> — Optional heuristics (placeholders, thin text, weak URLs). Manual fact-check optional.</p>
+                <p class="mb-2"><strong class="text-dark">Usability (SUS)</strong> — Users complete the 10-item SUS survey; score 0–100 is computed automatically.</p>
+                <p class="mb-0"><strong class="text-dark">Learning Gain</strong> — Later vs earlier lesson quiz averages per learner-course path. Manual expert /5 optional.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include "footer.html" %}

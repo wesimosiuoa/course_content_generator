@@ -1,0 +1,140 @@
+{% include "header.html" %}
+
+<style>
+    body {
+        background-color: #f8f9fb;
+    }
+
+    .courses-container {
+        max-width: 1100px;
+        margin: 50px auto;
+        padding: 0 15px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .page-title {
+        font-weight: 600;
+        font-size: 1.4rem;
+        margin: 0;
+    }
+
+    .course-card {
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 18px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+        transition: all 0.2s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .course-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+    }
+
+    .course-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .course-description {
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 14px;
+        line-height: 1.4;
+    }
+
+    .meta-info {
+        font-size: 0.75rem;
+        color: #888;
+    }
+
+    .course-actions {
+        margin-top: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .popularity-badge {
+        font-size: 0.75rem;
+        background: #eef2ff;
+        color: #4338ca;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+
+</style>
+
+<div class="courses-container">
+
+    <div class="page-header">
+        <h2 class="page-title">Explore Courses</h2>
+    </div>
+
+    {% if courses %}
+        <div class="row g-3">
+
+            {% for course in courses %}
+                <div class="col-lg-4 col-md-6 col-12">
+                    <div class="course-card">
+
+                        <div>
+                            <div class="course-title">
+                                {{ course.title }}
+                            </div>
+
+                            {% if course.description %}
+                                <div class="course-description">
+                                    {{ course.description }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="course-actions">
+
+                            <a href="{{ url_for('main.view_course', course_id=course.id) }}"
+                            class="btn btn-sm btn-outline-secondary">
+                                View
+                            </a>
+
+                            {% if course.id in enrolled_ids %}
+                                <span class="badge bg-success align-self-center">
+                                    Enrolled
+                                </span>
+                            {% else %}
+                                <a href="{{ url_for('main.enroll', course_id=course.id) }}"
+                                class="btn btn-sm btn-primary">
+                                    Enroll
+                                </a>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div>
+    {% else %}
+        <div class="text-muted">
+            No courses available yet.
+        </div>
+    {% endif %}
+
+</div>
+
+{% include "footer.html" %}

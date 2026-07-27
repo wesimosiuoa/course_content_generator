@@ -1,0 +1,89 @@
+
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --primary:#2563eb;
+    --gold:#d4af37; 
+    --dark:#0f172a;
+    --gray:#64748b;
+}
+body{
+    background:#f1f5f9;
+    font-family:"Inter", sans-serif;
+}
+.verify-wrapper{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:40px 20px;
+}
+.verify-box{
+    width:600px;
+    max-width:100%;
+    background:#fff;
+    border:10px solid var(--gold);
+    border-radius:12px;
+    padding:40px 30px;
+    position:relative;
+    box-shadow:0 10px 30px rgba(0,0,0,0.1);
+    text-align:center;
+}
+.verify-box:before,
+.verify-box:after{
+    content:"";
+    position:absolute;
+    width:60px;
+    height:60px;
+    border:4px solid var(--gold);
+}
+.verify-box:before{
+    top:10px;
+    left:10px;
+    border-right:none;
+    border-bottom:none;
+}   
+.verify-box:after{
+    bottom:10px;
+    right:10px;
+    border-left:none;
+    border-top:none;
+}
+.valid{
+    color:green;
+    font-weight:bold;
+}
+.invalid{
+    color:red;
+    font-weight:bold;
+}
+</style>
+
+<div class="container">
+    <div class="verify-wrapper">
+        <div class="verify-box">
+
+            <h2>Certificate Verification</h2>
+
+            {% if cert %}
+                <p><strong>Certificate Code:</strong> {{ cert.certificate_code }}</p>
+                <p><strong>Issued To:</strong> {{ cert.user_name }}</p>
+                <p><strong>Course:</strong> {{ cert.course_name }}</p>
+                <p><strong>Issue Date:</strong> 
+                    {{ cert.issue_date.strftime('%d %B %Y') if cert.issue_date else 'N/A' }}
+                </p>
+
+                <div class="valid">✅ Certificate is valid</div>
+
+            {% else %}
+                <div class="invalid">❌ Certificate not found or invalid</div>
+            {% endif %}
+
+        </div>
+    </div>
+    <center>
+        <a href="/" class="btn btn-outline">Back to Home</a>
+    </center>
+</div>
+

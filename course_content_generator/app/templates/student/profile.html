@@ -1,0 +1,158 @@
+{% extends "student/dashboard_base.html" %}
+{% block content %}
+<style>
+*{box-sizing:border-box}
+.lp{max-width:740px;margin:0 auto;padding:1.5rem 1rem;font-family:inherit}
+
+/* Hero — student identity */
+.lp-hero{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:10px;display:flex;align-items:flex-start;gap:16px}
+.lp-av{width:56px;height:56px;border-radius:50%;background:#dbeafe;color:#1e40af;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;flex-shrink:0;text-transform:uppercase}
+.lp-name{font-size:16px;font-weight:600;color:#0f172a;margin-bottom:2px}
+.lp-email{font-size:13px;color:#64748b;margin-bottom:10px}
+.lp-tags{display:flex;flex-wrap:wrap;gap:6px}
+.lp-tag{font-size:11.5px;padding:3px 10px;border-radius:99px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+
+/* Metric grid */
+.lp-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.lp-mc{background:#f8fafc;border-radius:10px;padding:10px 12px}
+.lp-mc-label{font-size:11px;color:#94a3b8;margin-bottom:4px}
+.lp-mc-val{font-size:15px;font-weight:600;color:#0f172a}
+
+/* Cards */
+.lp-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:1rem 1.25rem;margin-bottom:10px}
+.lp-head{font-size:10.5px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:#94a3b8;padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid #f1f5f9}
+.lp-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.lp-2col .lp-card{margin:0}
+
+/* Pills */
+.lp-pill{display:inline-block;font-size:11px;padding:2px 10px;border-radius:99px;font-weight:500}
+.lp-pill-info{background:#dbeafe;color:#1e40af}
+.lp-pill-warn{background:#fef3c7;color:#92400e}
+.lp-pill-success{background:#d1fae5;color:#065f46}
+
+/* Domain bars */
+.lp-drow{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
+.lp-drow:last-child{border-bottom:none}
+.lp-dname{min-width:120px;color:#0f172a}
+.lp-track{flex:1;height:5px;border-radius:99px;background:#f1f5f9}
+.lp-fill{height:100%;border-radius:99px;background:#3b82f6}
+.lp-dscore{min-width:24px;text-align:right;font-size:12px;color:#64748b}
+
+/* Searches */
+.lp-sitem{display:flex;align-items:center;gap:8px;font-size:13px;color:#64748b;padding:6px 0;border-bottom:1px solid #f1f5f9}
+.lp-sitem:last-child{border-bottom:none}
+.lp-sdot{width:5px;height:5px;border-radius:50%;background:#cbd5e1;flex-shrink:0}
+
+.lp-empty{font-size:13px;color:#94a3b8;padding:4px 0}
+.lp-tags-wrap{display:flex;flex-wrap:wrap;gap:6px}
+
+@media(max-width:600px){
+  .lp-metrics{grid-template-columns:repeat(2,1fr)}
+  .lp-2col{grid-template-columns:1fr}
+  .lp-hero{flex-direction:column}
+}
+</style>
+
+<div class="lp">
+
+  <!-- HERO: Student identity — most important, always first -->
+  <div class="lp-hero">
+    <div class="lp-av">
+      {{ profile.details.name[:2] if profile.details.name else 'LD' }}
+    </div>
+    <div style="flex:1;min-width:0">
+      <div class="lp-name">{{ profile.details.name or '—' }}</div>
+      <div class="lp-email">{{ profile.details.email or '—' }}</div>
+      <div class="lp-tags">
+        {% if profile.static_profile.enrollment_date %}
+          <span class="lp-tag">Enrolled {{ profile.static_profile.enrollment_date }}</span>
+        {% endif %}
+        {% if profile.static_profile.learning_goal %}
+          <span class="lp-tag">Goal: {{ profile.static_profile.learning_goal }}</span>
+        {% endif %}
+        {% if profile.static_profile.explicit_level %}
+          <span class="lp-tag">Level: {{ profile.static_profile.explicit_level }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- METRICS: 4-up summary -->
+  <div class="lp-metrics">
+    <div class="lp-mc">
+      <div class="lp-mc-label">Estimated level</div>
+      <div class="lp-mc-val">
+        {% if profile.derived_metrics.estimated_level %}
+          <span class="lp-pill lp-pill-info">{{ profile.derived_metrics.estimated_level }}</span>
+        {% else %}—{% endif %}
+      </div>
+    </div>
+    <div class="lp-mc">
+      <div class="lp-mc-label">Engagement score</div>
+      <div class="lp-mc-val">
+        {% if profile.derived_metrics.engagement_score is not none %}
+          <span class="lp-pill lp-pill-warn">{{ profile.derived_metrics.engagement_score }}</span>
+        {% else %}—{% endif %}
+      </div>
+    </div>
+    <div class="lp-mc">
+      <div class="lp-mc-label">Liked courses</div>
+      <div class="lp-mc-val">{{ profile.behavioral_profile.liked_courses | length }}</div>
+    </div>
+    <div class="lp-mc">
+      <div class="lp-mc-label">Disliked courses</div>
+      <div class="lp-mc-val">{{ profile.behavioral_profile.disliked_courses | length }}</div>
+    </div>
+  </div>
+
+  <!-- DOMAIN INTERESTS -->
+  <div class="lp-card">
+    <div class="lp-head">Domain interest scores</div>
+    {% if profile.behavioral_profile.interest_scores %}
+      {% set max_score = profile.behavioral_profile.interest_scores.values() | max %}
+      {% for domain, score in profile.behavioral_profile.interest_scores.items() %}
+        <div class="lp-drow">
+          <span class="lp-dname">{{ domain }}</span>
+          <div class="lp-track">
+            <div class="lp-fill" style="width:{{ ((score / max_score) * 100) | round }}%"></div>
+          </div>
+          <span class="lp-dscore">{{ score }}</span>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="lp-empty">No domain activity yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- PREFERRED DOMAINS + RECENT SEARCHES side by side -->
+  <div class="lp-2col">
+    <div class="lp-card">
+      <div class="lp-head">Preferred domains</div>
+      {% if profile.static_profile.preferred_domains %}
+        <div class="lp-tags-wrap">
+          {% for domain in profile.static_profile.preferred_domains %}
+            <span class="lp-pill lp-pill-success">{{ domain }}</span>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="lp-empty">No preferences selected.</p>
+      {% endif %}
+    </div>
+
+    <div class="lp-card">
+      <div class="lp-head">Recent searches</div>
+      {% if profile.behavioral_profile.recent_searches %}
+        {% for query in profile.behavioral_profile.recent_searches %}
+          <div class="lp-sitem">
+            <div class="lp-sdot"></div>
+            {{ query }}
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="lp-empty">No searches recorded.</p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

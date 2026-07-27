@@ -1,0 +1,313 @@
+{% include "header.html" %}
+
+<style>
+    body {
+        background: linear-gradient(135deg, #f8fafc, #eef2ff);
+    }
+
+    .courses-container {
+        max-width: 1140px;
+        margin: 48px auto 64px;
+        padding: 0 16px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .page-title {
+        font-weight: 800;
+        font-size: 1.55rem;
+        margin: 0;
+        color: #0f172a;
+    }
+
+    .page-sub {
+        color: #64748b;
+        font-size: 0.92rem;
+        margin: 4px 0 0;
+    }
+
+    .course-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+        transition: all 0.2s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    .course-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #0f172a;
+        line-height: 1.3;
+    }
+
+    .course-description {
+        font-size: 0.88rem;
+        color: #64748b;
+        margin-bottom: 14px;
+        line-height: 1.45;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 3.9em;
+    }
+
+    .badge-soft {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+    }
+
+    .badge-level {
+        background: #eef2ff;
+        color: #3730a3;
+        border-color: #c7d2fe;
+    }
+
+    .badge-domain {
+        background: #f0fdf4;
+        color: #15803d;
+        border-color: #bbf7d0;
+    }
+
+    .badge-duration {
+        background: #fff7ed;
+        color: #c2410c;
+        border-color: #fed7aa;
+    }
+
+    .stats-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 14px;
+        margin: 10px 0 12px;
+        font-size: 0.82rem;
+        color: #475569;
+        font-weight: 600;
+    }
+
+    .stats-row .stat {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .stats-row .star {
+        color: #f59e0b;
+    }
+
+    .instructor-box {
+        background: linear-gradient(135deg, #f8fafc, #eff6ff);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-top: auto;
+        margin-bottom: 12px;
+    }
+
+    .instructor-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748b;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+
+    .instructor-name {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .instructor-expertise {
+        font-size: 0.78rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    .course-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .empty-state {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px dashed #cbd5e1;
+        padding: 40px;
+        text-align: center;
+        color: #64748b;
+    }
+</style>
+
+<div class="courses-container">
+
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">
+                <i class="fa-solid fa-graduation-cap text-primary me-2"></i>
+                Explore Courses
+            </h2>
+            <p class="page-sub">
+                Ratings, popularity, duration, and an assistant instructor for reevaluation &amp; consultancy.
+            </p>
+        </div>
+        {% if session.get('user_id') and session.get('role') == 'student' %}
+            <a href="{{ url_for('main.discover') }}" class="btn btn-outline-primary btn-sm fw-semibold">
+                <i class="fa-solid fa-compass me-1"></i> Discover
+            </a>
+        {% endif %}
+    </div>
+
+    {% if courses %}
+        <div class="row g-4">
+            {% for course in courses %}
+                <div class="col-lg-4 col-md-6 col-12">
+                    <div class="course-card">
+
+                        <div class="d-flex flex-wrap gap-1 mb-2">
+                            {% if course.level %}
+                                <span class="badge-soft badge-level">{{ course.level }}</span>
+                            {% endif %}
+                            {% if course.domain %}
+                                <span class="badge-soft badge-domain">{{ course.domain }}</span>
+                            {% endif %}
+                            <span class="badge-soft badge-duration">
+                                <i class="fa-regular fa-clock"></i>
+                                {{ course.duration_display or 'Flexible' }}
+                            </span>
+                        </div>
+
+                        <div class="course-title">{{ course.title }}</div>
+
+                        <div class="course-description">
+                            {% if course.description %}
+                                {{ course.description }}
+                            {% else %}
+                                Structured learning pathway with modules, lessons, and assessments.
+                            {% endif %}
+                        </div>
+
+                        <div class="stats-row">
+                            <span class="stat" title="Average rating">
+                                {% if course.rating and course.rating.has_rating %}
+                                    <span class="star">★</span>
+                                    {{ '%.1f'|format(course.rating.average) }}
+                                    <span class="text-muted fw-normal">/5</span>
+                                {% else %}
+                                    <span class="star" style="opacity:.35">★</span>
+                                    New
+                                {% endif %}
+                            </span>
+                            <span class="stat" title="Likes">
+                                <i class="fa-solid fa-thumbs-up text-primary"></i>
+                                {{ course.likes or 0 }} like (s)
+                            </span>
+                            <span class="stat" title="Students enrolled">
+                                <i class="fa-solid fa-users text-success"></i>
+                                {{ course.enrollments or 0 }} students
+                            </span>
+                        </div>
+
+                        <div class="instructor-box">
+                            <div class="instructor-label">
+                                <i class="fa-solid fa-chalkboard-user me-1"></i>
+                                Assistant instructor
+                            </div>
+                            {% if course.instructor %}
+                                <div class="instructor-name">
+                                    {{ course.instructor.full_name }}
+                                </div>
+                                {% if course.instructor.expertise_domain %}
+                                    <div class="instructor-expertise">
+                                        Expertise: {{ course.instructor.expertise_domain }}
+                                    </div>
+                                {% else %}
+                                    <div class="instructor-expertise">
+                                        Reevaluation &amp; personal consultancy support
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="instructor-name text-muted">
+                                    Instructor assignment pending
+                                </div>
+                                <div class="instructor-expertise">
+                                    Will be matched by expertise when an instructor is available
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="course-actions">
+                            <a href="{{ url_for('main.view_course', course_id=course.id) }}"
+                               class="btn btn-sm btn-outline-secondary fw-semibold">
+                                View
+                            </a>
+
+                            {% if course.enrolled or (course.id in enrolled_ids) %}
+                                <span class="badge bg-success">
+                                    <i class="fa-solid fa-circle-check me-1"></i>
+                                    Enrolled
+                                </span>
+                                {% if session.get('user_id') %}
+                                <a href="{{ url_for('main.view_my_course', course_id=course.id) }}"
+                                   class="btn btn-sm btn-success fw-semibold">
+                                    Open
+                                </a>
+                                {% endif %}
+                            {% else %}
+                                {% if session.get('user_id') %}
+                                    <a href="{{ url_for('main.enroll', course_id=course.id) }}"
+                                       class="btn btn-sm btn-primary fw-semibold">
+                                        Enroll
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('main.login', next=url_for('main.enroll', course_id=course.id)) }}"
+                                       class="btn btn-sm btn-primary fw-semibold">
+                                        Login to enroll
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fa-solid fa-book-open fa-2x mb-3 text-primary"></i>
+            <div class="fw-semibold mb-1">No courses available yet</div>
+            <div class="small">Generated courses will appear here for all learners.</div>
+        </div>
+    {% endif %}
+
+</div>
+
+{% include "footer.html" %}

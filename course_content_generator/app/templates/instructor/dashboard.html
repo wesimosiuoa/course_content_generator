@@ -1,0 +1,100 @@
+{% include "instructor/header.html" %}
+
+<div class="p-4">
+  <div class="row g-4">
+    <div class="col-12">
+      <div class="card card-soft p-4">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+          <div>
+            <p class="text-uppercase fw-semibold mb-2 text-primary" style="letter-spacing: 0.2em; font-size: 0.78rem;">Instructor Command Center</p>
+            <h3 class="fw-bold mb-2">Welcome back, {{ full_name or 'Instructor' }}.</h3>
+            <p class="text-muted mb-0" style="max-width: 700px;">Manage review work, guide learner progress, and stay connected to your courses from one streamlined workspace.</p>
+          </div>
+          <span class="badge rounded-pill bg-primary text-white px-3 py-2">Focus area: {{ expertise_domain or 'Your domain' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card card-soft h-100 p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-semibold mb-0">Pending reviews</h5>
+          <span class="badge bg-warning text-dark">Live</span>
+        </div>
+        <div class="display-5 fw-bold text-primary">{{ pending_reviews_count }}</div>
+        <p class="text-muted mt-2 mb-0">Reevaluation requests awaiting your response.</p>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card card-soft h-100 p-4">
+        <h5 class="fw-semibold mb-3">Teaching toolkit</h5>
+        <ul class="list-unstyled mb-0 text-muted">
+          <li class="mb-2"><i class="fa-solid fa-check-circle text-primary me-2"></i> Review learner submissions</li>
+          <li class="mb-2"><i class="fa-solid fa-check-circle text-primary me-2"></i> Guide course progression</li>
+          <li class="mb-2"><i class="fa-solid fa-check-circle text-primary me-2"></i> Support students in your field</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card card-soft h-100 p-4">
+        <h5 class="fw-semibold mb-3">Panel status</h5>
+        <div class="d-grid gap-2">
+          <div class="p-2 rounded-3 bg-light">Role: <strong>{{ session.get('role', 'Instructor') }}</strong></div>
+          <div class="p-2 rounded-3 bg-light">Access: <strong>Active</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="card card-soft p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <h4 class="fw-semibold mb-0">What you can do today</h4>
+          <span class="text-muted small">Everything you need in one focused workspace</span>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 bg-light">
+              <div class="card-body">
+                <h6 class="fw-semibold">Review requests</h6>
+                <p class="text-muted small mb-3">Handle reevaluation and grading requests from a tidy queue.</p>
+                <a href="{{ url_for('assessment.instructor_reevaluation_requests') }}" class="btn btn-primary btn-sm">Open queue</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 bg-light">
+              <div class="card-body">
+                <h6 class="fw-semibold">Course library</h6>
+                <p class="text-muted small mb-3">Browse the available content in your teaching domain.</p>
+                <a href="/courses" class="btn btn-outline-secondary btn-sm">Browse courses</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 bg-light">
+              <div class="card-body">
+                <h6 class="fw-semibold">Course creation</h6>
+                <p class="text-muted small mb-3">Create new learning experiences for your students.</p>
+                <a href="/preferences" class="btn btn-outline-primary btn-sm">Start creating</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 bg-light">
+              <div class="card-body">
+                <h6 class="fw-semibold">Learner support</h6>
+                <p class="text-muted small mb-3">Stay close to feedback and support student outcomes.</p>
+                <a href="{{ url_for('assessment.instructor_reevaluation_requests') }}" class="btn btn-outline-dark btn-sm">Support queue</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include "footer.html" %}

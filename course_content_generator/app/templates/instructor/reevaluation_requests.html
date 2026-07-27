@@ -1,0 +1,50 @@
+{% include "instructor/header.html" %}
+
+<div class="p-4">
+  <div class="card card-soft mb-4 p-4">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+      <div>
+        <p class="text-uppercase fw-semibold mb-2 text-primary" style="letter-spacing: 0.2em; font-size: 0.78rem;">Review workflow</p>
+        <h3 class="fw-bold mb-2">Reevaluation Review Queue</h3>
+        <p class="text-muted mb-0">Keep student review cycles fast, transparent, and organized.</p>
+      </div>
+      <a href="{{ url_for('main.instructor_dashboard') }}" class="btn btn-outline-secondary">Back to dashboard</a>
+    </div>
+  </div>
+
+  {% if not requests %}
+    <div class="alert alert-info rounded-4 shadow-sm border-0">There are no pending reevaluation requests right now.</div>
+  {% else %}
+    <div class="row g-4">
+      {% for request in requests %}
+        <div class="col-12">
+          <div class="card card-soft">
+            <div class="card-body p-4">
+              <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div style="max-width: 900px;">
+                  <div class="d-flex align-items-center gap-2 mb-3">
+                    <h5 class="fw-semibold mb-0">{{ request.student_name }}</h5>
+                    <span class="badge bg-warning text-dark">{{ request.status }}</span>
+                  </div>
+                  <p class="mb-2 text-muted"><strong>Course:</strong> {{ request.course_title }}</p>
+                  <p class="mb-2 text-muted"><strong>Module:</strong> {{ request.module_index + 1 }}</p>
+                  <p class="mb-2"><strong>Question:</strong> {{ request.question_text }}</p>
+                  <p class="mb-2"><strong>Student answer:</strong> {{ request.answer_text }}</p>
+                  <p class="mb-2"><strong>Current score:</strong> {{ request.score if request.score is not none else 'Not graded' }}</p>
+                  <p class="mb-0"><strong>Reason:</strong> {{ request.reason }}</p>
+                </div>
+
+                <form method="post" action="{{ url_for('assessment.resolve_reevaluation_request', request_id=request.id) }}" class="d-flex gap-2">
+                  <button type="submit" name="action" value="reviewed" class="btn btn-success">Mark reviewed</button>
+                  <button type="submit" name="action" value="declined" class="btn btn-outline-danger">Decline</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
+{% include "footer.html" %}

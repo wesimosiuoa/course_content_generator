@@ -1,0 +1,404 @@
+{% if session.get('role') == 'admin' %}
+    {% include "admin/header.html" %}
+{% elif session.get('role') == 'instructor' %}
+    {% include "instructor/header.html" %}
+{% endif %}
+
+<style>
+.heuristic-card { border-left: 4px solid #2563eb; }
+.module-anchor:target { scroll-margin-top: 90px; }
+.sticky-review-nav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(255,255,255,0.96);
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 1rem;
+    backdrop-filter: blur(6px);
+}
+.sticky-review-nav a {
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.status-ok { background: #dcfce7; color: #166534; }
+.status-miss { background: #fee2e2; color: #991b1b; }
+.lesson-block { border: 1px solid #e2e8f0; border-radius: 14px; }
+.notes-preview {
+    max-height: 160px;
+    overflow: auto;
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.86rem;
+    white-space: pre-wrap;
+}
+.skip-link {
+    position: absolute;
+    left: -999px;
+    top: 0;
+    background: #1d4ed8;
+    color: #fff;
+    padding: 8px 12px;
+    z-index: 2000;
+    border-radius: 0 0 8px 0;
+}
+.skip-link:focus { left: 0; }
+</style>
+
+<a class="skip-link" href="#main-review-content">Skip to course content</a>
+
+<div class="p-4" id="main-review-content">
+    {# H1: Visibility of system status + Match real world #}
+    <nav aria-label="Breadcrumb" class="mb-3 small">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.admin_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('main.admin_expert_ratings') }}">Expert Ratings</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Course review</li>
+        </ol>
+    </nav>
+
+    <div class="header-bar d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
+        <div>
+            <p class="text-uppercase text-primary fw-semibold mb-2" style="letter-spacing: 0.18em; font-size: 0.8rem;">
+                Admin course review
+            </p>
+            <h1 class="h2 mb-2">{{ course.title }}</h1>
+            <p class="text-muted mb-0">
+                {{ course.domain }} · {{ course.level }} · Duration: {{ course.duration }}
+                {% if course.created_at %} · Created {{ course.created_at }}{% endif %}
+            </p>
+            <p class="small text-muted mt-2 mb-0">
+                Review all generated materials here (no re-login). Layout follows
+                <strong>Nielsen’s 10 usability heuristics</strong> for expert inspection.
+            </p>
+        </div>
+        <div class="d-flex flex-column align-items-stretch gap-2">
+            {% if already_rated %}
+            <span class="status-pill status-ok"><i class="fa-solid fa-check"></i> You already rated this course</span>
+            {% else %}
+            <span class="status-pill status-miss"><i class="fa-solid fa-star"></i> Not rated yet (once only)</span>
+            {% endif %}
+            <a class="btn btn-primary"
+               href="{{ url_for('main.admin_expert_ratings', course_id=course.id) }}">
+                {% if already_rated %}View your rating{% else %}Rate this course{% endif %}
+            </a>
+            <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_expert_ratings') }}">
+                Back to expert ratings
+            </a>
+        </div>
+    </div>
+
+    {# Recognition rather than recall: sticky section nav #}
+    <div class="sticky-review-nav d-flex flex-wrap gap-2 align-items-center" role="navigation" aria-label="Course sections">
+        <span class="text-muted small me-1">Jump to:</span>
+        <a class="btn btn-sm btn-outline-primary" href="#overview">Overview</a>
+        <a class="btn btn-sm btn-outline-primary" href="#outcomes">Outcomes</a>
+        <a class="btn btn-sm btn-outline-primary" href="#modules">Modules</a>
+        <a class="btn btn-sm btn-outline-primary" href="#resources">Resources</a>
+        <a class="btn btn-sm btn-outline-primary" href="#assessment">Assessment</a>
+        <a class="btn btn-sm btn-outline-primary" href="#heuristics">10 Heuristics</a>
+        <a class="btn btn-sm btn-outline-success" href="{{ url_for('main.admin_expert_ratings', course_id=course.id) }}">Rate</a>
+    </div>
+
+    {# Status strip: Visibility of system status #}
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card card-soft p-3 h-100 text-center">
+                <div class="text-muted small">Modules</div>
+                <div class="fw-bold fs-4 text-primary">{{ course.stats.module_count }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card card-soft p-3 h-100 text-center">
+                <div class="text-muted small">Lessons</div>
+                <div class="fw-bold fs-4 text-primary">{{ course.stats.lesson_count }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card card-soft p-3 h-100 text-center">
+                <div class="text-muted small">Notes ready</div>
+                <div class="fw-bold fs-4 text-primary">{{ course.stats.notes_ready }}/{{ course.stats.lesson_count }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card card-soft p-3 h-100 text-center">
+                <div class="text-muted small">Quiz items</div>
+                <div class="fw-bold fs-4 text-primary">{{ course.stats.quiz_questions }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card card-soft p-3 h-100 text-center">
+                <div class="text-muted small">Outcomes</div>
+                <div class="fw-bold fs-4 text-primary">{{ course.stats.outcomes }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card card-soft p-3 h-100 text-center">
+                <div class="text-muted small">Resources</div>
+                <div class="fw-bold fs-4 text-primary">{{ course.stats.resources }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-8">
+            {# Overview #}
+            <section id="overview" class="card card-soft p-4 mb-4" aria-labelledby="overview-heading">
+                <h2 id="overview-heading" class="h5 fw-semibold mb-3">
+                    <i class="fa-solid fa-book-open text-primary me-2"></i>Overview
+                </h2>
+                <p class="mb-3">{{ course.overview or course.description or 'No overview provided.' }}</p>
+                <div class="row g-3 small">
+                    <div class="col-md-6">
+                        <div class="text-muted">Target audience</div>
+                        <div>{{ course.target_audience or '—' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted">Prerequisites</div>
+                        <div>{{ course.prerequisites or '—' }}</div>
+                    </div>
+                </div>
+            </section>
+
+            {# Outcomes #}
+            <section id="outcomes" class="card card-soft p-4 mb-4" aria-labelledby="outcomes-heading">
+                <h2 id="outcomes-heading" class="h5 fw-semibold mb-3">
+                    <i class="fa-solid fa-bullseye text-primary me-2"></i>Learning outcomes
+                </h2>
+                {% if course.learning_outcomes %}
+                <ol class="mb-0">
+                    {% for o in course.learning_outcomes %}
+                    <li class="mb-2">{{ o }}</li>
+                    {% endfor %}
+                </ol>
+                {% else %}
+                <p class="text-muted mb-0">No learning outcomes listed.</p>
+                {% endif %}
+            </section>
+
+            {# Modules & lessons — full materials #}
+            <section id="modules" class="mb-4" aria-labelledby="modules-heading">
+                <h2 id="modules-heading" class="h5 fw-semibold mb-3">
+                    <i class="fa-solid fa-layer-group text-primary me-2"></i>Modules &amp; lesson materials
+                </h2>
+
+                {% for module in course.modules %}
+                <div class="card card-soft p-4 mb-3 module-anchor" id="module-{{ module.index }}">
+                    <div class="d-flex justify-content-between flex-wrap gap-2 mb-2">
+                        <div>
+                            <div class="text-uppercase text-primary small fw-semibold">Module {{ module.index + 1 }}</div>
+                            <h3 class="h5 fw-semibold mb-1">{{ module.title }}</h3>
+                            <p class="text-muted small mb-0">{{ module.description or 'No module description.' }}</p>
+                        </div>
+                        <span class="badge text-bg-light border align-self-start">
+                            {{ module.lessons|length }} lesson(s)
+                        </span>
+                    </div>
+
+                    {% for lesson in module.lessons %}
+                    <div class="lesson-block p-3 mb-3" id="lesson-{{ module.index }}-{{ lesson.index }}">
+                        <div class="d-flex justify-content-between flex-wrap gap-2 mb-2">
+                            <div>
+                                <div class="fw-semibold">
+                                    Lesson {{ lesson.index + 1 }}: {{ lesson.title }}
+                                </div>
+                                <div class="small text-muted">{{ lesson.summary or 'No summary.' }}</div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% if lesson.has_notes %}
+                                <span class="status-pill status-ok"><i class="fa-solid fa-file-lines"></i> Notes</span>
+                                {% else %}
+                                <span class="status-pill status-miss"><i class="fa-solid fa-file-circle-xmark"></i> No notes</span>
+                                {% endif %}
+                                <span class="badge text-bg-primary">{{ lesson.quiz_count }} quiz Qs</span>
+                            </div>
+                        </div>
+
+                        {% if lesson.notes_preview %}
+                        <div class="mb-2">
+                            <div class="small fw-semibold mb-1">Notes preview</div>
+                            <div class="notes-preview">{{ lesson.notes_preview }}</div>
+                        </div>
+                        {% endif %}
+
+                        {% if lesson.sample_questions %}
+                        <div>
+                            <div class="small fw-semibold mb-1">Sample quiz questions</div>
+                            <ul class="small mb-0">
+                                {% for q in lesson.sample_questions %}
+                                <li class="mb-1">{{ q }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% elif lesson.quiz_count == 0 %}
+                        <div class="small text-muted">No quiz generated for this lesson yet.</div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted small mb-0">No lessons in this module.</p>
+                    {% endfor %}
+
+                    {% if module.saqs %}
+                    <div class="border-top pt-3 mt-1">
+                        <div class="fw-semibold small mb-2">
+                            <i class="fa-solid fa-pen-to-square me-1 text-primary"></i>
+                            Short-answer questions (module {{ module.index + 1 }})
+                        </div>
+                        <ol class="small mb-0">
+                            {% for saq in module.saqs %}
+                            <li class="mb-2">
+                                {{ saq.question }}
+                                <span class="text-muted">(max {{ saq.max_score }})</span>
+                            </li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="alert alert-warning">No modules found in this course.</div>
+                {% endfor %}
+            </section>
+
+            {# Resources #}
+            <section id="resources" class="card card-soft p-4 mb-4" aria-labelledby="resources-heading">
+                <h2 id="resources-heading" class="h5 fw-semibold mb-3">
+                    <i class="fa-solid fa-link text-primary me-2"></i>Resources
+                </h2>
+                {% if course.resources %}
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>URL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in course.resources %}
+                            <tr>
+                                <td>{{ r.title }}</td>
+                                <td class="small text-muted">{{ r.author or '—' }}</td>
+                                <td class="small">
+                                    {% if r.url %}
+                                    <a href="{{ r.url }}" target="_blank" rel="noopener noreferrer">{{ r.url }}</a>
+                                    {% else %}—{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No resources listed.</p>
+                {% endif %}
+            </section>
+
+            {# Assessment / certification #}
+            <section id="assessment" class="card card-soft p-4 mb-4" aria-labelledby="assessment-heading">
+                <h2 id="assessment-heading" class="h5 fw-semibold mb-3">
+                    <i class="fa-solid fa-clipboard-check text-primary me-2"></i>Assessment &amp; certification
+                </h2>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="text-muted small">Assessment</div>
+                        <div>{{ course.assessment or '—' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Certification</div>
+                        <div>{{ course.certification or '—' }}</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        {# Sidebar: Nielsen heuristics checklist #}
+        <div class="col-xl-4">
+            <div class="card card-soft p-4 mb-4" style="position: sticky; top: 72px;">
+                <h2 id="heuristics" class="h5 fw-semibold mb-2">
+                    <i class="fa-solid fa-list-check text-primary me-2"></i>Nielsen’s 10 heuristics
+                </h2>
+                <p class="small text-muted mb-3">
+                    Use this checklist while reviewing the materials. Then submit a
+                    <strong>one-time</strong> star rating for the course.
+                </p>
+
+                {% for h in course.heuristics %}
+                <div class="heuristic-card bg-light rounded-3 p-3 mb-2">
+                    <div class="fw-semibold small mb-1">{{ h.id }}. {{ h.name }}</div>
+                    <div class="small text-muted mb-2">{{ h.prompt }}</div>
+                    <div class="form-check">
+                        <input class="form-check-input heuristic-check" type="checkbox" id="h{{ h.id }}" value="{{ h.id }}">
+                        <label class="form-check-label small" for="h{{ h.id }}">Reviewed</label>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="mt-3 p-3 rounded-3 border">
+                    <div class="small text-muted mb-1">Checklist progress</div>
+                    <div class="progress mb-2" style="height: 8px;" aria-hidden="true">
+                        <div id="heuristic-progress" class="progress-bar bg-success" style="width: 0%"></div>
+                    </div>
+                    <div class="small fw-semibold" id="heuristic-progress-label">0 / 10 reviewed</div>
+                </div>
+
+                <a class="btn btn-primary w-100 mt-3"
+                   href="{{ url_for('main.admin_expert_ratings', course_id=course.id) }}">
+                    {% if already_rated %}
+                    <i class="fa-solid fa-eye me-1"></i> View your rating
+                    {% else %}
+                    <i class="fa-solid fa-star me-1"></i> Rate this course (once)
+                    {% endif %}
+                </a>
+                <p class="small text-muted mt-2 mb-0">
+                    Checklist state is local to this session (helps you track review).
+                    Official scores are saved only on the Expert Ratings form.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const checks = document.querySelectorAll('.heuristic-check');
+    const bar = document.getElementById('heuristic-progress');
+    const label = document.getElementById('heuristic-progress-label');
+    const key = 'aicg_heuristics_course_{{ course.id }}';
+
+    function restore() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(key) || '[]');
+            checks.forEach(function (c) {
+                if (saved.indexOf(c.value) !== -1) c.checked = true;
+            });
+        } catch (e) {}
+        update();
+    }
+
+    function update() {
+        const done = Array.from(checks).filter(function (c) { return c.checked; }).map(function (c) { return c.value; });
+        const pct = Math.round((done.length / checks.length) * 100);
+        if (bar) bar.style.width = pct + '%';
+        if (label) label.textContent = done.length + ' / ' + checks.length + ' reviewed';
+        try { localStorage.setItem(key, JSON.stringify(done)); } catch (e) {}
+    }
+
+    checks.forEach(function (c) { c.addEventListener('change', update); });
+    restore();
+})();
+</script>
+
+{% include "footer.html" %}

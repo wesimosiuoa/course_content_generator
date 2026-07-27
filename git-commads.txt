@@ -1,0 +1,25 @@
+GIT CLEANUP COMMANDS (REMOVE SECRETS AND RESET HISTORY)
+
+Step 1: Delete existing Git history rm -rf .git
+
+Step 2: Reinitialize Git repository git init
+
+Step 3: Add all project files git add .
+
+Step 4: Create a fresh initial commit git commit -m “Initial clean
+commit”
+
+Step 5: Set main branch git branch -M main
+
+Step 6: Add remote repository git remote add origin
+https://github.com/wesimosiuoa/course_content_generator.git
+
+Step 7: Force push clean history git push -u origin main –force
+
+IMPORTANT AFTER PUSH:
+
+1)  Add .env to .gitignore: echo .env >> .gitignore
+
+2)  Create .env.example (instead of committing real secrets) Example
+    contents: GROQ_API_KEY=your_key_here
+    HUGGINGFACE_TOKEN=your_token_here

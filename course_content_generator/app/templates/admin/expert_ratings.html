@@ -1,0 +1,535 @@
+{% if session.get('role') == 'admin' %}
+    {% include "admin/header.html" %}
+{% elif session.get('role') == 'instructor' %}
+    {% include "instructor/header.html" %}
+{% endif %}
+
+<style>
+/* Star rating colors: worse → best (standard traffic palette) */
+:root {
+    --star-empty: #d1d5db;
+    --star-1: #dc2626; /* red — worst */
+    --star-2: #ea580c; /* orange */
+    --star-3: #ca8a04; /* amber/yellow */
+    --star-4: #65a30d; /* lime */
+    --star-5: #16a34a; /* green — best */
+}
+
+.star-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    align-items: center;
+}
+.star-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    color: #475569;
+}
+.star-legend-item i { font-size: 0.95rem; }
+.star-c1 { color: var(--star-1) !important; }
+.star-c2 { color: var(--star-2) !important; }
+.star-c3 { color: var(--star-3) !important; }
+.star-c4 { color: var(--star-4) !important; }
+.star-c5 { color: var(--star-5) !important; }
+.star-empty { color: var(--star-empty) !important; }
+
+.star-rating {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 0.2rem;
+    user-select: none;
+}
+.star-rating input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+.star-rating label {
+    cursor: pointer;
+    font-size: 1.65rem;
+    line-height: 1;
+    color: var(--star-empty);
+    transition: color 0.12s ease, transform 0.12s ease;
+    margin: 0;
+    padding: 0 1px;
+}
+.star-rating label:hover {
+    transform: scale(1.12);
+}
+.star-rating label i {
+    pointer-events: none;
+}
+
+/* Paint stars up to selected / hovered — higher_is_better (red worst → green best) */
+.star-rating:not(.star-rating-inverted) label:hover,
+.star-rating:not(.star-rating-inverted) label:hover ~ label { color: var(--star-3); }
+
+.star-rating:not(.star-rating-inverted) input:checked ~ label { color: var(--star-1); }
+.star-rating:not(.star-rating-inverted) input[value="1"]:checked ~ label { color: var(--star-1); }
+.star-rating:not(.star-rating-inverted) input[value="2"]:checked ~ label { color: var(--star-2); }
+.star-rating:not(.star-rating-inverted) input[value="3"]:checked ~ label { color: var(--star-3); }
+.star-rating:not(.star-rating-inverted) input[value="4"]:checked ~ label { color: var(--star-4); }
+.star-rating:not(.star-rating-inverted) input[value="5"]:checked ~ label { color: var(--star-5); }
+
+/* Hover preview: color by the hovered star value */
+.star-rating:not(.star-rating-inverted) label[data-value="1"]:hover,
+.star-rating:not(.star-rating-inverted) label[data-value="1"]:hover ~ label { color: var(--star-1) !important; }
+.star-rating:not(.star-rating-inverted) label[data-value="2"]:hover,
+.star-rating:not(.star-rating-inverted) label[data-value="2"]:hover ~ label { color: var(--star-2) !important; }
+.star-rating:not(.star-rating-inverted) label[data-value="3"]:hover,
+.star-rating:not(.star-rating-inverted) label[data-value="3"]:hover ~ label { color: var(--star-3) !important; }
+.star-rating:not(.star-rating-inverted) label[data-value="4"]:hover,
+.star-rating:not(.star-rating-inverted) label[data-value="4"]:hover ~ label { color: var(--star-4) !important; }
+.star-rating:not(.star-rating-inverted) label[data-value="5"]:hover,
+.star-rating:not(.star-rating-inverted) label[data-value="5"]:hover ~ label { color: var(--star-5) !important; }
+
+/* Inverted (hallucination): 1 best green → 5 worst red */
+.star-rating-inverted input[value="1"]:checked ~ label { color: var(--star-5); }
+.star-rating-inverted input[value="2"]:checked ~ label { color: var(--star-4); }
+.star-rating-inverted input[value="3"]:checked ~ label { color: var(--star-3); }
+.star-rating-inverted input[value="4"]:checked ~ label { color: var(--star-2); }
+.star-rating-inverted input[value="5"]:checked ~ label { color: var(--star-1); }
+
+.star-rating-inverted label[data-value="1"]:hover,
+.star-rating-inverted label[data-value="1"]:hover ~ label { color: var(--star-5) !important; }
+.star-rating-inverted label[data-value="2"]:hover,
+.star-rating-inverted label[data-value="2"]:hover ~ label { color: var(--star-4) !important; }
+.star-rating-inverted label[data-value="3"]:hover,
+.star-rating-inverted label[data-value="3"]:hover ~ label { color: var(--star-3) !important; }
+.star-rating-inverted label[data-value="4"]:hover,
+.star-rating-inverted label[data-value="4"]:hover ~ label { color: var(--star-2) !important; }
+.star-rating-inverted label[data-value="5"]:hover,
+.star-rating-inverted label[data-value="5"]:hover ~ label { color: var(--star-1) !important; }
+
+.star-score-label {
+    min-width: 7.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.star-display {
+    display: inline-flex;
+    gap: 2px;
+    vertical-align: middle;
+}
+.star-display i {
+    font-size: 0.95rem;
+}
+.clear-stars {
+    font-size: 0.8rem;
+    border: 0;
+    background: transparent;
+    color: #64748b;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+}
+.clear-stars:hover { color: #0f172a; }
+</style>
+
+<div class="p-4">
+    <div class="header-bar d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
+        <div>
+            <p class="text-uppercase text-primary fw-semibold mb-2" style="letter-spacing: 0.18em; font-size: 0.8rem;">Manual evaluation</p>
+            <h2 class="mb-1">Expert ratings workspace</h2>
+            <p class="text-muted mb-0" style="max-width: 720px;">
+                This is where <strong>domain experts, instructors, and admins</strong> rate generated courses with
+                <strong>colored stars</strong> (worse → best). Scores fill the <em>Manual</em> column on the admin evaluation matrix.
+            </p>
+        </div>
+        <div class="text-end">
+            <div class="small text-muted">Coverage</div>
+            <div class="fw-semibold">{{ coverage.total_ratings }} rating(s)</div>
+            <div class="text-muted small">{{ coverage.courses_rated }} / {{ coverage.total_courses }} courses rated</div>
+            <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-sm btn-outline-secondary mt-2">Back to dashboard</a>
+        </div>
+    </div>
+
+    {# Color legend #}
+    <div class="card card-soft p-3 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+            <div>
+                <div class="fw-semibold mb-2"><i class="fa-solid fa-star me-1 text-warning"></i> Star color scale</div>
+                <div class="star-legend">
+                    <span class="star-legend-item"><i class="fa-solid fa-star star-c1"></i> 1 Worst</span>
+                    <span class="star-legend-item"><i class="fa-solid fa-star star-c2"></i> 2 Poor</span>
+                    <span class="star-legend-item"><i class="fa-solid fa-star star-c3"></i> 3 Fair</span>
+                    <span class="star-legend-item"><i class="fa-solid fa-star star-c4"></i> 4 Good</span>
+                    <span class="star-legend-item"><i class="fa-solid fa-star star-c5"></i> 5 Best</span>
+                </div>
+            </div>
+            <div class="small text-muted" style="max-width: 340px;">
+                For most metrics, more stars = better (green). For <strong>Hallucination</strong>, the scale is inverted:
+                1 star = low risk (green), 5 stars = severe risk (red).
+            </div>
+        </div>
+    </div>
+
+    {# ---- Who / where / how ---- #}
+    <div class="card card-soft p-4 mb-4">
+        <h5 class="fw-semibold mb-3">How expert rating works</h5>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="p-3 rounded-3 bg-light h-100">
+                    <div class="fw-semibold mb-2"><i class="fa-solid fa-user-tie text-primary me-2"></i>Who rates?</div>
+                    <ul class="small text-muted mb-0 ps-3">
+                        <li><strong>Admin</strong> — overall quality oversight</li>
+                        <li><strong>Instructor / domain expert</strong> — subject accuracy &amp; pedagogy</li>
+                        <li><strong>Learners</strong> — SUS survey only (not this page)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 rounded-3 bg-light h-100">
+                    <div class="fw-semibold mb-2"><i class="fa-solid fa-location-dot text-primary me-2"></i>Where?</div>
+                    <ul class="small text-muted mb-0 ps-3">
+                        <li>This page: <code>/admin/expert_ratings</code></li>
+                        <li>Sidebar → <strong>Expert Ratings</strong></li>
+                        <li>Open course in admin panel → review materials → rate once</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 rounded-3 bg-light h-100">
+                    <div class="fw-semibold mb-2"><i class="fa-solid fa-list-check text-primary me-2"></i>What is rated?</div>
+                    <ul class="small text-muted mb-0 ps-3">
+                        <li>Completeness, Relevance</li>
+                        <li>Hallucination risk (inverted stars)</li>
+                        <li>Learning gain &amp; expert usability</li>
+                        <li><span class="text-danger">Not</span> generation time (automatic only)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {# ---- Rating form ---- #}
+        <div class="col-lg-7">
+            <div class="card card-soft p-4">
+                <h5 class="fw-semibold mb-3">Submit expert scores</h5>
+
+                <form method="GET" action="{{ url_for('main.admin_expert_ratings') }}" class="mb-4">
+                    <label class="form-label fw-semibold small">1. Select course to review</label>
+                    <div class="input-group">
+                        <select name="course_id" class="form-select" onchange="this.form.submit()">
+                            <option value="">— Choose a course —</option>
+                            <option value="system" {% if selected_course == 'system' %}selected{% endif %}>System-wide (no specific course)</option>
+                            {% for c in courses %}
+                            <option value="{{ c.id }}" {% if selected_course == (c.id|string) %}selected{% endif %}>
+                                {{ c.title }} {% if c.domain %}· {{ c.domain }}{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_expert_ratings') }}">Clear</a>
+                    </div>
+                </form>
+
+                {% if course_preview %}
+                <div class="border rounded-3 p-3 mb-4 bg-light">
+                    <div class="d-flex justify-content-between flex-wrap gap-2 mb-2">
+                        <div>
+                            <div class="fw-semibold">{{ course_preview.title }}</div>
+                            <div class="small text-muted">
+                                {{ course_preview.domain or '—' }} · {{ course_preview.level or '—' }} ·
+                                {{ course_preview.module_count }} modules · {{ course_preview.lesson_count }} lessons ·
+                                {{ course_preview.resources_count }} resources
+                            </div>
+                        </div>
+                        <a href="{{ url_for('main.admin_course_review', course_id=course_preview.id) }}"
+                           class="btn btn-sm btn-outline-primary">
+                            Open course <i class="fa-solid fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                    {% if course_preview.overview %}
+                    <p class="small text-muted mb-2">{{ course_preview.overview }}{% if course_preview.overview|length >= 400 %}…{% endif %}</p>
+                    {% endif %}
+                    {% if course_preview.outcomes %}
+                    <div class="small">
+                        <strong>Outcomes:</strong>
+                        {{ course_preview.outcomes[:3]|join(' · ') }}{% if course_preview.outcomes|length > 3 %}…{% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% elif selected_course == 'system' %}
+                <div class="alert alert-info border-0 rounded-3">
+                    Rating the <strong>system overall</strong> (not tied to one course). Use course-specific ratings when possible for research validity.
+                </div>
+                {% else %}
+                <div class="alert alert-warning border-0 rounded-3">
+                    Select a course above to load a preview and rate it. You can still submit system-wide scores by choosing “System-wide”.
+                </div>
+                {% endif %}
+
+                {% if already_rated %}
+                <div class="alert alert-success border-0 rounded-3">
+                    <strong>You already rated this course once.</strong>
+                    Scores below are read-only. Experts cannot re-rate the same course.
+                    {% if course_preview %}
+                    <div class="mt-2">
+                        <a href="{{ url_for('main.admin_course_review', course_id=course_preview.id) }}" class="btn btn-sm btn-outline-success">
+                            Review full course materials
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('main.admin_expert_ratings') }}" id="expert-rating-form">
+                    <input type="hidden" name="course_id" value="{{ selected_course or 'system' }}">
+
+                    <label class="form-label fw-semibold small mb-3">
+                        2. Rate <strong>all 5 metrics</strong> with stars
+                        {% if already_rated %}(locked — already submitted){% else %}(one-time per course){% endif %}
+                    </label>
+
+                    {% for m in metrics %}
+                    {% set existing = existing_ratings.get(m.key) if existing_ratings else none %}
+                    <div class="border rounded-3 p-3 mb-3 metric-rating-card"
+                         data-metric="{{ m.key }}"
+                         data-inverted="{{ '1' if not m.higher_is_better else '0' }}">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-2">
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">
+                                    <i class="fa-solid {{ m.icon }} text-primary me-1"></i>
+                                    {{ m.label }}
+                                    {% if not m.higher_is_better %}
+                                    <span class="badge text-bg-warning ms-1">Lower risk = better (green at 1★)</span>
+                                    {% endif %}
+                                </div>
+                                <div class="small text-muted">{{ m.what_to_review }}</div>
+                            </div>
+                            <div class="text-end">
+                                {% if already_rated and existing %}
+                                <div class="star-display mb-1"
+                                     data-score="{{ existing.score|round|int }}"
+                                     data-inverted="{{ '1' if not m.higher_is_better else '0' }}"></div>
+                                <div class="star-score-label" id="label_{{ m.key }}">
+                                    {{ existing.score|int }} / {{ existing.max_score|int }}
+                                    {% if existing.created_at %}<div class="small text-muted">{{ existing.created_at }}</div>{% endif %}
+                                </div>
+                                {% else %}
+                                <div class="star-rating {% if not m.higher_is_better %}star-rating-inverted{% endif %}"
+                                     data-metric="{{ m.key }}"
+                                     role="radiogroup"
+                                     aria-label="{{ m.label }} star rating">
+                                    {% for s in range(5, 0, -1) %}
+                                    <input type="radio"
+                                           name="score_{{ m.key }}"
+                                           id="star_{{ m.key }}_{{ s }}"
+                                           value="{{ s }}"
+                                           {% if already_rated %}disabled{% endif %}
+                                           {% if existing and existing.score|round|int == s %}checked{% endif %}
+                                           required>
+                                    <label for="star_{{ m.key }}_{{ s }}"
+                                           data-value="{{ s }}"
+                                           title="{{ s }} star{{ 's' if s != 1 else '' }}">
+                                        <i class="fa-solid fa-star"></i>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                                <input type="hidden" name="max_{{ m.key }}" value="{{ m.max_score }}">
+                                <div class="d-flex align-items-center justify-content-end gap-2 mt-1">
+                                    <span class="star-score-label text-muted" id="label_{{ m.key }}">Not rated</span>
+                                    {% if not already_rated %}
+                                    <button type="button" class="clear-stars" data-clear="{{ m.key }}" hidden>Clear</button>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <details class="small mb-2">
+                            <summary class="text-primary" style="cursor:pointer;">Rubric &amp; how to rate</summary>
+                            <div class="mt-2 text-muted">
+                                <p class="mb-1"><strong>Who:</strong> {{ m.who }}</p>
+                                <p class="mb-2"><strong>How:</strong> {{ m.how }}</p>
+                                <ul class="mb-0 ps-3">
+                                    {% for line in m.rubric %}
+                                    <li>{{ line }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </details>
+
+                        {% if already_rated and existing and existing.notes %}
+                        <div class="small text-muted fst-italic">“{{ existing.notes }}”</div>
+                        {% elif not already_rated %}
+                        <input type="text" name="notes_{{ m.key }}" class="form-control form-control-sm"
+                               placeholder="Optional expert notes for {{ m.label }}">
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="d-flex gap-2 flex-wrap align-items-center">
+                        {% if already_rated %}
+                        <button type="button" class="btn btn-secondary px-4" disabled>
+                            <i class="fa-solid fa-lock me-2"></i>Already rated (locked)
+                        </button>
+                        {% else %}
+                        <button type="submit" class="btn btn-primary px-4" {% if not selected_course %}disabled{% endif %}>
+                            <i class="fa-solid fa-floppy-disk me-2"></i>Save one-time rating
+                        </button>
+                        {% endif %}
+                        {% if not selected_course %}
+                        <span class="small text-muted">Select a course (or system-wide) first.</span>
+                        {% elif course_preview and not already_rated %}
+                        <a href="{{ url_for('main.admin_course_review', course_id=course_preview.id) }}" class="btn btn-outline-primary">
+                            Review full materials first
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {# ---- History & coverage ---- #}
+        <div class="col-lg-5">
+            <div class="card card-soft p-4 mb-4">
+                <h5 class="fw-semibold mb-3">Rating coverage by metric</h5>
+                {% if coverage.by_metric %}
+                <div class="list-group list-group-flush">
+                    {% for m in metrics %}
+                    {% set st = coverage.by_metric.get(m.key) %}
+                    <div class="list-group-item px-0 d-flex justify-content-between align-items-center gap-2">
+                        <span>{{ m.label }}</span>
+                        {% if st %}
+                        <span class="d-inline-flex align-items-center gap-2">
+                            <span class="star-display" data-score="{{ st.avg_score|round|int }}" data-inverted="{{ '1' if not m.higher_is_better else '0' }}"></span>
+                            <span class="small text-muted">{{ '%.1f'|format(st.avg_score) }} · n={{ st.count }}</span>
+                        </span>
+                        {% else %}
+                        <span class="badge text-bg-light text-muted border">❌ No ratings</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted small mb-0">No expert ratings yet. Submit the first batch using the form.</p>
+                {% endif %}
+            </div>
+
+            <div class="card card-soft p-4">
+                <h5 class="fw-semibold mb-3">Recent expert ratings</h5>
+                {% if history %}
+                <div class="table-responsive" style="max-height: 480px; overflow:auto;">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>When</th>
+                                <th>Metric</th>
+                                <th>Score</th>
+                                <th>Course</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for h in history %}
+                            {% set inv = 1 if h.metric_name == 'hallucination' else 0 %}
+                            <tr>
+                                <td class="small text-muted text-nowrap">{{ h.created_at }}</td>
+                                <td class="small">{{ h.metric_label }}</td>
+                                <td>
+                                    <span class="star-display" data-score="{{ h.score|round|int }}" data-inverted="{{ inv }}"></span>
+                                    <div class="small text-muted">{{ h.score }} / {{ h.max_score|int }}</div>
+                                </td>
+                                <td class="small">
+                                    {{ h.course_title }}
+                                    <div class="text-muted">by {{ h.evaluator_name }}</div>
+                                    {% if h.notes %}<div class="text-muted fst-italic">“{{ h.notes }}”</div>{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted small mb-0">No ratings recorded yet for this filter.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const LABELS_NORMAL = {
+        0: 'Not rated',
+        1: '1 ★ Worst',
+        2: '2 ★ Poor',
+        3: '3 ★ Fair',
+        4: '4 ★ Good',
+        5: '5 ★ Best'
+    };
+    const LABELS_INVERTED = {
+        0: 'Not rated',
+        1: '1 ★ Best (low risk)',
+        2: '2 ★ Low risk',
+        3: '3 ★ Moderate',
+        4: '4 ★ High risk',
+        5: '5 ★ Worst (severe)'
+    };
+    const COLOR_CLASS = { 1: 'star-c1', 2: 'star-c2', 3: 'star-c3', 4: 'star-c4', 5: 'star-c5' };
+
+    function qualityColor(score, inverted) {
+        // Map to visual "goodness" color class
+        const s = Math.max(1, Math.min(5, Math.round(score)));
+        if (!inverted) return COLOR_CLASS[s];
+        // inverted: 1 best (green/c5), 5 worst (red/c1)
+        return COLOR_CLASS[6 - s];
+    }
+
+    function updateLabel(metricKey) {
+        const checked = document.querySelector('input[name="score_' + metricKey + '"]:checked');
+        const card = document.querySelector('.metric-rating-card[data-metric="' + metricKey + '"]');
+        const inverted = card && card.dataset.inverted === '1';
+        const label = document.getElementById('label_' + metricKey);
+        const clearBtn = document.querySelector('.clear-stars[data-clear="' + metricKey + '"]');
+        const val = checked ? parseInt(checked.value, 10) : 0;
+        const map = inverted ? LABELS_INVERTED : LABELS_NORMAL;
+        if (label) {
+            label.textContent = map[val] || 'Not rated';
+            label.className = 'star-score-label ' + (val ? qualityColor(val, inverted) : 'text-muted');
+        }
+        if (clearBtn) clearBtn.hidden = !val;
+    }
+
+    document.querySelectorAll('.star-rating').forEach(function (group) {
+        const metric = group.dataset.metric;
+        group.querySelectorAll('input[type="radio"]').forEach(function (input) {
+            input.addEventListener('change', function () { updateLabel(metric); });
+        });
+        updateLabel(metric);
+    });
+
+    document.querySelectorAll('.clear-stars').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const key = btn.dataset.clear;
+            document.querySelectorAll('input[name="score_' + key + '"]').forEach(function (r) {
+                r.checked = false;
+            });
+            updateLabel(key);
+        });
+    });
+
+    // Render read-only star displays in coverage / history
+    document.querySelectorAll('.star-display').forEach(function (el) {
+        const score = parseInt(el.dataset.score || '0', 10);
+        const inverted = el.dataset.inverted === '1';
+        const filledClass = score ? qualityColor(score, inverted) : 'star-empty';
+        let html = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= score) {
+                html += '<i class="fa-solid fa-star ' + filledClass + '"></i>';
+            } else {
+                html += '<i class="fa-solid fa-star star-empty"></i>';
+            }
+        }
+        el.innerHTML = html;
+    });
+})();
+</script>
+
+{% include "footer.html" %}

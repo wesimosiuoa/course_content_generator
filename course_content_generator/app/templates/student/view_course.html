@@ -1,0 +1,1256 @@
+{% extends "student/dashboard_base.html" %}
+{% block content %}
+
+<style>
+:root{
+    --ms-blue:#2563eb;
+    --ms-blue-700:#1d4ed8;
+    --ms-blue-50:#eff6ff;
+
+    --ms-word:#185abd;
+    --ms-word-bg:#eaf2fd;
+
+    --ms-ppt:#d24726;
+    --ms-ppt-bg:#fdf0ec;
+
+    --ms-video:#107c10;
+    --ms-video-bg:#edf8ed;
+
+    --ms-quiz:#c08400;
+    --ms-quiz-bg:#fff8e1;
+
+    --ms-gray-25:#fcfcfd;
+    --ms-gray-50:#f8fafc;
+    --ms-gray-100:#f1f5f9;
+    --ms-gray-200:#e2e8f0;
+    --ms-gray-300:#cbd5e1;
+    --ms-gray-500:#64748b;
+    --ms-gray-700:#334155;
+    --ms-gray-900:#0f172a;
+
+    --success:#16a34a;
+    --success-bg:#ecfdf3;
+
+    --radius-xl:20px;
+    --radius-lg:16px;
+    --radius-md:12px;
+
+    --shadow-sm:0 1px 2px rgba(15, 23, 42, 0.05);
+    --shadow-md:0 8px 24px rgba(15, 23, 42, 0.06);
+    --shadow-lg:0 14px 34px rgba(15, 23, 42, 0.08);
+}
+
+.container{
+    max-width: 1240px;
+}
+
+.page-shell{
+    background:#fff;
+    font-family:"Segoe UI", Inter, system-ui, -apple-system, sans-serif;
+    color:var(--ms-gray-900);
+}
+
+/* Top course card */
+.course-overview-card{
+    background:#fff;
+    border:1px solid var(--ms-gray-200);
+    border-radius:var(--radius-xl);
+    box-shadow:var(--shadow-md);
+    padding:20px 22px;
+    margin-bottom:18px;
+}
+
+.course-overview-row{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:18px;
+    flex-wrap:wrap;
+}
+
+.course-main{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+    min-width:0;
+}
+
+.course-icon{
+    width:48px;
+    height:48px;
+    border-radius:14px;
+    border:1px solid var(--ms-gray-200);
+    background:linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--ms-gray-700);
+    flex-shrink:0;
+}
+
+.course-title{
+    margin:0;
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--ms-gray-900);
+    line-height:1.2;
+}
+
+.course-meta{
+    margin-top:4px;
+    color:var(--ms-gray-500);
+    font-size:.95rem;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+}
+
+.dot-sep{
+    color:var(--ms-gray-300);
+}
+
+.header-badges{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.info-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:7px 12px;
+    border-radius:999px;
+    font-size:.82rem;
+    font-weight:600;
+    border:1px solid var(--ms-gray-200);
+    background:#fff;
+    color:var(--ms-gray-700);
+}
+
+.info-chip.enrolled{
+    background:var(--success-bg);
+    color:var(--success);
+    border-color:#bbf7d0;
+}
+
+.info-chip.completed{
+    background:#eff6ff;
+    color:#1d4ed8;
+    border-color:#bfdbfe;
+}
+
+.info-chip.not-enrolled{
+    background:#fff7ed;
+    color:#c2410c;
+    border-color:#fed7aa;
+}
+
+.info-chip.popularity{
+    background:#f8fafc;
+}
+
+/* Star rating — social proof */
+.rating-block{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:6px;
+    min-width:140px;
+}
+
+.rating-stars{
+    display:inline-flex;
+    align-items:center;
+    gap:2px;
+    line-height:1;
+}
+
+.rating-stars .star{
+    font-size:1.05rem;
+    color:#e2e8f0;
+}
+
+.rating-stars .star.filled{
+    color:#f59e0b;
+}
+
+.rating-stars .star.half{
+    color:#fbbf24;
+}
+
+.rating-score-row{
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+}
+
+.rating-score{
+    font-size:1.25rem;
+    font-weight:800;
+    color:var(--ms-gray-900);
+    letter-spacing:-0.02em;
+}
+
+.rating-meta{
+    font-size:.78rem;
+    color:var(--ms-gray-500);
+    font-weight:500;
+}
+
+.rating-empty{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 12px;
+    border-radius:12px;
+    background:linear-gradient(135deg, #fffbeb 0%, #f8fafc 100%);
+    border:1px dashed #fcd34d;
+    color:var(--ms-gray-700);
+    font-size:.82rem;
+    font-weight:600;
+}
+
+.rating-social{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:flex-end;
+}
+
+.social-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-size:.75rem;
+    font-weight:600;
+    color:var(--ms-gray-500);
+    background:#fff;
+    border:1px solid var(--ms-gray-200);
+    border-radius:999px;
+    padding:4px 9px;
+}
+
+.course-description{
+    margin-top:12px;
+    color:var(--ms-gray-500);
+    font-size:.95rem;
+}
+
+.status-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:10px;
+}
+
+.module-chip.done{
+    background:#f0fdf4;
+    border-color:#bbf7d0;
+    color:#15803d;
+}
+
+.module-chip.in-progress{
+    background:#eff6ff;
+    border-color:#bfdbfe;
+    color:#1d4ed8;
+}
+
+.module-chip.assessed{
+    background:#f5f3ff;
+    border-color:#ddd6fe;
+    color:#6d28d9;
+}
+
+/* Progress */
+.overall-progress-wrap{
+    display:grid;
+    grid-template-columns:auto 1fr auto;
+    align-items:center;
+    gap:14px;
+    margin:8px 2px 26px;
+}
+
+.progress-label,
+.progress-value{
+    font-size:.9rem;
+    font-weight:600;
+    color:var(--ms-gray-700);
+}
+
+.progress{
+    height:10px;
+    border-radius:999px;
+    background:var(--ms-gray-100);
+    overflow:hidden;
+}
+
+.progress-bar{
+    border-radius:999px;
+    background:linear-gradient(90deg, #84cc16 0%, #65a30d 100%);
+}
+
+/* Module card / accordion */
+.module-card{
+    background:#fff;
+    border:1px solid var(--ms-gray-200);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:var(--shadow-sm);
+    margin-bottom:14px;
+}
+
+.module-card .accordion-button{
+    background:#fff;
+    box-shadow:none;
+    border:none;
+    padding:16px 18px;
+}
+
+.module-card .accordion-button:not(.collapsed){
+    background:#fff;
+    color:var(--ms-gray-900);
+    box-shadow:none;
+}
+
+.module-card .accordion-button:focus{
+    box-shadow:none;
+    border:none;
+}
+
+.module-header{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+}
+
+.module-left{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
+}
+
+.module-left .module-title{
+    font-size:1rem;
+    font-weight:700;
+    color:var(--ms-gray-900);
+    margin:0;
+}
+
+.module-right{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.module-chip{
+    display:inline-flex;
+    align-items:center;
+    padding:5px 10px;
+    border-radius:999px;
+    font-size:.78rem;
+    font-weight:600;
+    border:1px solid var(--ms-gray-200);
+    background:#fff;
+    color:var(--ms-gray-700);
+}
+
+.module-chip.score{
+    background:#f0fdf4;
+    border-color:#bbf7d0;
+    color:#15803d;
+}
+
+.module-chip.pending{
+    background:#f8fafc;
+    color:var(--ms-gray-500);
+}
+
+.module-body{
+    border-top:1px solid var(--ms-gray-200);
+    background:#fff;
+    padding:18px;
+}
+
+/* Lesson tabs */
+.lesson-tabs{
+    border-bottom:1px solid var(--ms-gray-200);
+    gap:18px;
+    margin-bottom:16px;
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    scrollbar-width:none;
+}
+.lesson-tabs::-webkit-scrollbar{
+    display:none;
+}
+.lesson-tabs .nav-link{
+    border:none;
+    border-bottom:2px solid transparent;
+    background:transparent;
+    color:var(--ms-gray-500);
+    font-size:.92rem;
+    font-weight:600;
+    padding:0 0 12px 0;
+    border-radius:0;
+    white-space:nowrap;
+}
+.lesson-tabs .nav-link.active{
+    color:var(--ms-gray-900);
+    border-bottom-color:var(--ms-blue);
+    background:transparent;
+}
+
+/* Lesson body */
+.lesson-summary-box{
+    background:var(--ms-gray-50);
+    border:1px solid var(--ms-gray-200);
+    border-radius:14px;
+    padding:14px 16px;
+    color:var(--ms-gray-700);
+    font-size:.94rem;
+    margin-bottom:14px;
+}
+
+.lesson-meta-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+}
+
+.lesson-meta-label{
+    font-size:.88rem;
+    font-weight:600;
+    color:var(--ms-gray-700);
+}
+
+.score-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:#f0fdf4;
+    color:#15803d;
+    border:1px solid #bbf7d0;
+    border-radius:999px;
+    padding:5px 11px;
+    font-size:.8rem;
+    font-weight:700;
+}
+
+/* Resource cards */
+.resource-grid{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+    gap:14px;
+}
+
+.resource-card{
+    border:1px solid var(--ms-gray-200);
+    border-radius:16px;
+    background:#fff;
+    padding:14px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    min-height:100%;
+}
+
+.resource-top{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.resource-icon{
+    width:34px;
+    height:34px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:.95rem;
+    flex-shrink:0;
+}
+
+.resource-title{
+    font-size:.95rem;
+    font-weight:700;
+    margin:0;
+    color:var(--ms-gray-900);
+}
+
+.resource-actions{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-top:auto;
+}
+
+/* Microsoft product accents */
+.word-card .resource-icon{
+    background:var(--ms-word-bg);
+    color:var(--ms-word);
+}
+.ppt-card .resource-icon{
+    background:var(--ms-ppt-bg);
+    color:var(--ms-ppt);
+}
+.video-card .resource-icon{
+    background:var(--ms-video-bg);
+    color:var(--ms-video);
+}
+.quiz-card .resource-icon{
+    background:var(--ms-quiz-bg);
+    color:var(--ms-quiz);
+}
+
+/* Buttons */
+.btn.btn-primary{
+    background:var(--ms-blue);
+    border-color:var(--ms-blue);
+    color:#fff;
+    border-radius:10px;
+    font-weight:600;
+    box-shadow:none;
+}
+
+.btn.btn-primary:hover,
+.btn.btn-primary:focus{
+    background:var(--ms-blue-700);
+    border-color:var(--ms-blue-700);
+    color:#fff;
+    box-shadow:none;
+}
+
+.action-btn{
+    width:100%;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    min-height:38px;
+    font-size:.88rem;
+}
+
+.btn-soft{
+    background:#fff !important;
+    color:var(--ms-blue) !important;
+    border-color:#bfdbfe !important;
+}
+.btn-soft:hover,
+.btn-soft:focus{
+    background:var(--ms-blue-50) !important;
+    color:var(--ms-blue-700) !important;
+    border-color:#93c5fd !important;
+}
+
+.btn-disabled-look{
+    background:#e2e8f0 !important;
+    color:#64748b !important;
+    border-color:#e2e8f0 !important;
+    cursor:not-allowed;
+}
+
+/* Footer */
+.module-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    border-top:1px solid var(--ms-gray-200);
+    margin-top:18px;
+    padding-top:16px;
+}
+
+.module-footer-note{
+    font-size:.9rem;
+    color:var(--ms-gray-700);
+    margin:0;
+}
+
+.module-footer-note strong{
+    color:var(--ms-gray-900);
+}
+
+.unlock-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:.8rem;
+    font-weight:700;
+    color:#15803d;
+    background:#f0fdf4;
+    border:1px solid #bbf7d0;
+    border-radius:999px;
+    padding:6px 10px;
+    margin-top:8px;
+}
+
+/* Loader */
+.loader-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.35);
+    backdrop-filter:blur(3px);
+    z-index:9999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.loader-card{
+    background:#fff;
+    border-radius:18px;
+    padding:24px 28px;
+    box-shadow:var(--shadow-lg);
+    text-align:center;
+    border:1px solid var(--ms-gray-200);
+}
+.loader-spinner{
+    width:42px;
+    height:42px;
+    margin:0 auto 12px;
+    border:4px solid #dbeafe;
+    border-top-color:var(--ms-blue);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+}
+@keyframes spin{
+    to{ transform:rotate(360deg); }
+}
+
+/* Empty state */
+.raw-json-card{
+    background:#fff;
+    border:1px solid var(--ms-gray-200);
+    border-radius:18px;
+    padding:16px;
+    box-shadow:var(--shadow-sm);
+}
+
+/* Responsive */
+@media (max-width: 1199px){
+    .resource-grid{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px){
+    .course-overview-card{
+        padding:16px;
+    }
+
+    .course-title{
+        font-size:1.16rem;
+    }
+
+    .overall-progress-wrap{
+        grid-template-columns:1fr;
+        gap:8px;
+    }
+
+    .resource-grid{
+        grid-template-columns:1fr;
+    }
+
+    .module-body{
+        padding:14px;
+    }
+
+    .module-card .accordion-button{
+        padding:14px;
+    }
+
+    .module-header{
+        align-items:flex-start;
+    }
+
+    .header-badges{
+        align-items:flex-start !important;
+        width:100%;
+    }
+
+    .rating-block{
+        align-items:flex-start;
+        width:100%;
+    }
+
+    .rating-social{
+        justify-content:flex-start;
+    }
+}
+</style>
+
+<div class="container page-shell py-2">
+
+    {% set modules = course.content.modules if course.content and course.content.modules else [] %}
+    {% set total_lessons = total_lessons if total_lessons is defined else 0 %}
+    {% set completed_lessons = completed_lessons if completed_lessons is defined else 0 %}
+    {% set overall_progress = overall_progress if overall_progress is defined else 0 %}
+    {% set rating = rating if rating is defined else {'has_rating': false, 'average': none, 'count': 0, 'enrollments': 0, 'likes': 0} %}
+    {% set module_assessed = module_assessed if module_assessed is defined else {} %}
+
+    {# --- Course overview (title, status, rating) --- #}
+    <div class="course-overview-card">
+        <div class="course-overview-row">
+            <div class="course-main">
+                <div class="course-icon">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+
+                <div>
+                    <h2 class="course-title">{{ course.title }}</h2>
+
+                    <div class="course-meta">
+                        <span>{{ modules|length }} modules</span>
+                        <span class="dot-sep">•</span>
+                        <span>{{ total_lessons }} lessons</span>
+                        <span class="dot-sep">•</span>
+                        <span>{{ completed_lessons }} of {{ total_lessons }} quizzes done</span>
+                    </div>
+
+                    <div class="status-row">
+                        {% if course_completed %}
+                            <span class="info-chip completed">
+                                <i class="fa-solid fa-award"></i>
+                                Completed
+                            </span>
+                        {% endif %}
+
+                        {% if enrolled %}
+                            <span class="info-chip enrolled">
+                                <i class="fa-solid fa-circle-check"></i>
+                                Enrolled
+                            </span>
+                        {% else %}
+                            <span class="info-chip not-enrolled">
+                                <i class="fa-solid fa-circle-info"></i>
+                                Not enrolled
+                            </span>
+                        {% endif %}
+
+                        {% if reaction %}
+                            <span class="info-chip">
+                                {% if reaction == 'like' %}
+                                    <i class="fa-solid fa-thumbs-up text-primary"></i>
+                                    Liked
+                                {% elif reaction == 'dislike' %}
+                                    <i class="fa-solid fa-thumbs-down text-danger"></i>
+                                    Disliked
+                                {% endif %}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    {% if course.description %}
+                        <div class="course-description">
+                            {{ course.description }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="header-badges" style="align-items:flex-end; flex-direction:column;">
+                {# Star rating for student interest #}
+                <div class="rating-block">
+                    {% if rating.has_rating and rating.average is not none %}
+                        {% set avg = rating.average %}
+                        {% set full_stars = (avg | int) %}
+                        {% set has_half = (avg - full_stars) >= 0.3 and (avg - full_stars) < 0.8 %}
+                        {% set round_up = (avg - full_stars) >= 0.8 %}
+                        <div class="rating-score-row">
+                            <span class="rating-score">{{ '%.1f'|format(avg) }}</span>
+                            <span class="rating-meta">/ 5</span>
+                        </div>
+                        <div class="rating-stars" aria-label="Rated {{ '%.1f'|format(avg) }} out of 5">
+                            {% for i in range(1, 6) %}
+                                {% if i <= full_stars or (round_up and i == full_stars + 1) %}
+                                    <i class="fa-solid fa-star star filled"></i>
+                                {% elif has_half and i == full_stars + 1 %}
+                                    <i class="fa-solid fa-star-half-stroke star half"></i>
+                                {% else %}
+                                    <i class="fa-regular fa-star star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="rating-meta">
+                            {% if rating.source == 'expert' %}
+                                Expert rated
+                            {% else %}
+                                Learner rated
+                            {% endif %}
+                            {% if rating.count %} · {{ rating.count }} review{% if rating.count != 1 %}s{% endif %}{% endif %}
+                        </div>
+                    {% else %}
+                        <div class="rating-empty">
+                            <i class="fa-regular fa-star text-warning"></i>
+                            New course — be the first to rate
+                        </div>
+                    {% endif %}
+
+                    <div class="rating-social">
+                        {% if rating.enrollments is defined %}
+                            <span class="social-pill" title="Students enrolled">
+                                <i class="fa-solid fa-users"></i>
+                                {{ rating.enrollments }} enrolled
+                            </span>
+                        {% endif %}
+                        {% if rating.likes is defined and rating.likes %}
+                            <span class="social-pill" title="Likes">
+                                <i class="fa-solid fa-thumbs-up text-primary"></i>
+                                {{ rating.likes }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if not enrolled %}
+                    <a href="/enroll_course/{{ course.id }}" class="btn btn-primary mt-2">
+                        <i class="fa-solid fa-user-plus me-1"></i> Enroll now
+                    </a>
+                {% elif not course_completed %}
+                    <span class="info-chip enrolled mt-2">
+                        <i class="fa-solid fa-play"></i>
+                        Continue learning
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# Certificate strip #}
+    {% if course_completed %}
+    <div class="module-card mb-3">
+        <div class="module-body">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h5 class="mb-1">Course completed 🎉</h5>
+                    <p class="text-muted small mb-0">
+                        You’ve successfully finished this course
+                    </p>
+                </div>
+                <span class="unlock-badge">
+                    <i class="fa-solid fa-award"></i>
+                    {% if certificate %}Certificate ready{% else %}Eligible for certificate{% endif %}
+                </span>
+            </div>
+            <div class="mt-3 d-flex gap-2 flex-wrap">
+                {% if certificate %}
+                    <a href="{{ url_for('main.view_certificate', course_id=course.id) }}" class="btn btn-primary">
+                        View certificate
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('main.generate_certificate', course_id=course.id) }}" class="btn btn-primary">
+                        Generate certificate
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="module-card mb-3">
+        <div class="module-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h6 class="mb-1">Certificate locked</h6>
+                <p class="text-muted small mb-0">
+                    Complete all module assessments to unlock your certificate
+                </p>
+            </div>
+            <span class="module-chip pending">
+                <i class="fa-solid fa-lock me-1"></i>
+                Locked
+            </span>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="overall-progress-wrap">
+        <div class="progress-label">Overall progress</div>
+        <div class="progress">
+            <div
+                class="progress-bar"
+                role="progressbar"
+                style="width: {{ '%.0f'|format(overall_progress) }}%;"
+                aria-valuenow="{{ '%.0f'|format(overall_progress) }}"
+                aria-valuemin="0"
+                aria-valuemax="100"
+            ></div>
+        </div>
+        <div class="progress-value">{{ '%.0f'|format(overall_progress) }}%</div>
+    </div>
+
+    {% if modules %}
+
+        <div class="accordion" id="courseAccordion">
+
+            {% for module in modules %}
+                {% set module_index = loop.index0 %}
+                {% set module_avg = module_averages.get(module_index) %}
+                {% set lessons_done = module_completed.get(module_index, false) %}
+                {% set assessed = module_assessed.get(module_index, false) %}
+                {% set module_stats = namespace(done=0) %}
+                {% set lesson_count = module.lessons|length if module.lessons else 0 %}
+
+                <div class="accordion-item module-card">
+                    <h2 class="accordion-header" id="heading{{ loop.index }}">
+                        <button
+                            class="accordion-button {% if not loop.first %}collapsed{% endif %}"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#collapse{{ loop.index }}"
+                            aria-expanded="{% if loop.first %}true{% else %}false{% endif %}"
+                            aria-controls="collapse{{ loop.index }}"
+                        >
+                            <div class="module-header">
+                                <div class="module-left">
+                                    <i class="fa-solid fa-chevron-down small text-muted"></i>
+                                    <p class="module-title mb-0">{{ module.title }}</p>
+                                </div>
+
+                                <div class="module-right">
+                                    <span class="module-chip">{{ lesson_count }} lessons</span>
+
+                                    {% if assessed %}
+                                        <span class="module-chip assessed">
+                                            <i class="fa-solid fa-check me-1"></i>Module completed
+                                        </span>
+                                    {% elif lessons_done %}
+                                        <span class="module-chip done">
+                                            <i class="fa-solid fa-lock-open me-1"></i>Assessment unlocked
+                                        </span>
+                                    {% elif module_avg is not none %}
+                                        <span class="module-chip in-progress">
+                                            <i class="fa-solid fa-spinner me-1"></i>In progress
+                                        </span>
+                                    {% else %}
+                                        <span class="module-chip pending">
+                                            <i class="fa-regular fa-circle me-1"></i>Not started
+                                        </span>
+                                    {% endif %}
+
+                                    {% if module_avg is not none %}
+                                        <span class="module-chip score">Avg: {{ "%.1f"|format(module_avg) }}%</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </button>
+                    </h2>
+
+                    <div
+                        id="collapse{{ loop.index }}"
+                        class="accordion-collapse collapse {% if loop.first %}show{% endif %}"
+                        data-bs-parent="#courseAccordion"
+                    >
+                        <div class="module-body">
+
+                            {% if module.lessons and module.lessons|length > 0 %}
+                                <ul class="nav lesson-tabs" id="lesson-tabs-{{ module_index }}" role="tablist">
+                                    {% for lesson in module.lessons %}
+                                        <li class="nav-item" role="presentation">
+                                            <button
+                                                class="nav-link {% if loop.first %}active{% endif %}"
+                                                id="lesson-tab-{{ module_index }}-{{ loop.index0 }}"
+                                                data-bs-toggle="pill"
+                                                data-bs-target="#lesson-pane-{{ module_index }}-{{ loop.index0 }}"
+                                                type="button"
+                                                role="tab"
+                                            >
+                                                L{{ loop.index }} - {{ lesson.title }}
+                                            </button>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+
+                                <div class="tab-content">
+                                    {% for lesson in module.lessons %}
+                                        {% set lesson_index = loop.index0 %}
+                                        {% set lesson_score = scores.get(module_index|string + '_' + lesson_index|string) %}
+                                        {% if lesson_score is not none %}
+                                            {% set module_stats.done = module_stats.done + 1 %}
+                                        {% endif %}
+
+                                        {% set notes_key = 'notes_' ~ course.id ~ '_' ~ module_index ~ '_' ~ lesson_index %}
+                                        {% set ppt_key = 'pptx_' ~ course.id ~ '_' ~ module_index ~ '_' ~ lesson_index %}
+                                        {% set video_key = 'video_' ~ course.id ~ '_' ~ module_index ~ '_' ~ lesson_index %}
+
+                                        <div
+                                            class="tab-pane fade {% if loop.first %}show active{% endif %}"
+                                            id="lesson-pane-{{ module_index }}-{{ lesson_index }}"
+                                            role="tabpanel"
+                                        >
+                                            <div class="lesson-summary-box">
+                                                {{ lesson.summary if lesson.summary else lesson.content }}
+                                            </div>
+
+                                            <div class="lesson-meta-row">
+                                                <div class="lesson-meta-label">Quiz score</div>
+                                                {% if lesson_score is not none %}
+                                                    <span class="score-pill">
+                                                        <i class="fa-solid fa-chart-line"></i>
+                                                        {{ "%.1f"|format(lesson_score) }}%
+                                                    </span>
+                                                {% else %}
+                                                    <span class="module-chip pending">No score yet</span>
+                                                {% endif %}
+                                            </div>
+
+                                            <div class="resource-grid">
+
+                                                <!-- Word / Study Notes -->
+                                                <div class="resource-card word-card">
+                                                    <div class="resource-top">
+                                                        <div class="resource-icon">
+                                                            <i class="fa-solid fa-file-word"></i>
+                                                        </div>
+                                                        <h5 class="resource-title">Study notes</h5>
+                                                    </div>
+
+                                                    <div class="resource-actions">
+                                                        <a
+                                                            href="/generate_lesson_notes/{{ course.id }}/{{ module_index }}/{{ lesson_index }}"
+                                                            class="btn btn-primary action-btn"
+                                                            onclick="showLoader('Generating study notes...')"
+                                                        >
+                                                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                                            Generate
+                                                        </a>
+
+                                                        {% if session.get(notes_key) %}
+                                                            <a
+                                                                href="/view_lesson_notes/{{ course.id }}/{{ module_index }}/{{ lesson_index }}"
+                                                                class="btn btn-primary btn-soft action-btn"
+                                                                target="_blank"
+                                                            >
+                                                                <i class="fa-solid fa-eye"></i>
+                                                                View notes
+                                                            </a>
+
+                                                            <a
+                                                                href="/download_lesson_notes/{{ course.id }}/{{ module_index }}/{{ lesson_index }}"
+                                                                class="btn btn-primary btn-soft action-btn"
+                                                            >
+                                                                <i class="fa-solid fa-download"></i>
+                                                                Download
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+
+                                                <!-- PowerPoint / Slides -->
+                                                <div class="resource-card ppt-card">
+                                                    <div class="resource-top">
+                                                        <div class="resource-icon">
+                                                            <i class="fa-solid fa-file-powerpoint"></i>
+                                                        </div>
+                                                        <h5 class="resource-title">Slides</h5>
+                                                    </div>
+
+                                                    <div class="resource-actions">
+                                                        <a
+                                                            href="/generate_lesson_pptx/{{ course.id }}/{{ module_index }}/{{ lesson_index }}"
+                                                            class="btn btn-primary action-btn"
+                                                            onclick="showLoader('Generating presentation slides...')"
+                                                        >
+                                                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                                            Generate
+                                                        </a>
+
+                                                        {% if session.get(ppt_key) %}
+                                                            <a
+                                                                href="/view_lesson_slides/{{ course.id }}/{{ module_index }}/{{ lesson_index }}"
+                                                                class="btn btn-primary btn-soft action-btn"
+                                                                target="_blank"
+                                                            >
+                                                                <i class="fa-solid fa-eye"></i>
+                                                                View slides
+                                                            </a>
+
+                                                            <a
+                                                                href="{{ url_for('main.download_lesson_pptx', course_id=course.id, module_index=module_index, lesson_index=lesson_index) }}"
+                                                                class="btn btn-primary btn-soft action-btn"
+                                                            >
+                                                                <i class="fa-solid fa-download"></i>
+                                                                Download
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+
+                                                <!-- Video -->
+                                                <div class="resource-card video-card">
+                                                    <div class="resource-top">
+                                                        <div class="resource-icon">
+                                                            <i class="fa-solid fa-circle-play"></i>
+                                                        </div>
+                                                        <h5 class="resource-title">Video</h5>
+                                                    </div>
+
+                                                    <div class="resource-actions">
+                                                        {% if session.get(video_key) %}
+                                                            <a
+                                                                href="/view_lesson_video/{{ course.id }}/{{ module_index }}/{{ lesson_index }}"
+                                                                class="btn btn-primary action-btn"
+                                                                target="_blank"
+                                                            >
+                                                                <i class="fa-solid fa-play"></i>
+                                                                Watch
+                                                            </a>
+
+                                                            <a
+                                                                href="{{ url_for('main.download_lesson_video', course_id=course.id, module_index=module_index, lesson_index=lesson_index) }}"
+                                                                class="btn btn-primary btn-soft action-btn"
+                                                            >
+                                                                <i class="fa-solid fa-download"></i>
+                                                                Download
+                                                            </a>
+                                                        {% elif session.get(notes_key) and session.get(ppt_key) %}
+                                                            <a
+                                                                href="/generate_lesson_video/{{ course.id }}/{{ module_index }}/{{ lesson_index }}"
+                                                                class="btn btn-primary action-btn"
+                                                                onclick="showLoader('Generating lesson video...')"
+                                                            >
+                                                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                                                Generate
+                                                            </a>
+                                                        {% else %}
+                                                            <button
+                                                                class="btn btn-primary btn-disabled-look action-btn"
+                                                                disabled
+                                                                title="Generate notes and slides first"
+                                                            >
+                                                                <i class="fa-solid fa-lock"></i>
+                                                                Generate notes & slides first
+                                                            </button>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+
+                                                <!-- Quiz -->
+                                                <div class="resource-card quiz-card">
+                                                    <div class="resource-top">
+                                                        <div class="resource-icon">
+                                                            <i class="fa-solid fa-clipboard-check"></i>
+                                                        </div>
+                                                        <h5 class="resource-title">Quiz</h5>
+                                                    </div>
+
+                                                    <div class="resource-actions">
+                                                        <a
+                                                            href="{{ url_for('main.lesson_quiz') }}?course={{ course.id }}&module={{ module_index }}&lesson={{ lesson_index }}"
+                                                            class="btn btn-primary action-btn"
+                                                            target="_blank"
+                                                        >
+                                                            <i class="fa-solid fa-check"></i>
+                                                            Take quiz
+                                                        </a>
+
+                                                        <button
+                                                            class="btn btn-primary btn-soft action-btn"
+                                                            onclick="generateQuiz({{ course.id }}, {{ module_index }}, {{ lesson_index }})"
+                                                        >
+                                                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                                            Generate quiz
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            <div class="module-footer">
+                                <div>
+                                    <p class="module-footer-note">
+                                        <strong>{{ module_stats.done }}</strong> of <strong>{{ lesson_count }}</strong> lesson quizzes completed
+                                        {% if assessed %}
+                                            — module assessment finished
+                                        {% elif lessons_done %}
+                                            — ready for module assessment
+                                        {% endif %}
+                                    </p>
+
+                                    {% if assessed %}
+                                        <span class="unlock-badge">
+                                            <i class="fa-solid fa-check"></i>
+                                            Module completed
+                                        </span>
+                                    {% elif lessons_done %}
+                                        <span class="unlock-badge">
+                                            <i class="fa-solid fa-lock-open"></i>
+                                            Module assessment unlocked
+                                        </span>
+                                    {% else %}
+                                        <span class="module-chip pending">
+                                            Complete all lesson quizzes to unlock assessment
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                {% if lessons_done %}
+                                    <a
+                                        href="{{ url_for('main.module_assessment', course_id=course.id, module_index=module_index) }}"
+                                        class="btn btn-primary"
+                                    >
+                                        <i class="fa-solid fa-arrow-up-right-from-square me-1"></i>
+                                        {% if assessed %}Retake module assessment{% else %}Take module assessment{% endif %}
+                                    </a>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <div class="raw-json-card">
+            <pre class="mb-0">{{ course.content | tojson(indent=2) }}</pre>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function showLoader(message) {
+    const existing = document.getElementById('loaderOverlay');
+    if (existing) existing.remove();
+
+    const loaderHtml = `
+        <div class="loader-overlay" id="loaderOverlay">
+            <div class="loader-card">
+                <div class="loader-spinner"></div>
+                <div class="fw-semibold mb-1" style="color:#0f172a;">${message}</div>
+                <div class="text-muted small">Please wait...</div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', loaderHtml);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(function () {
+        const loader = document.getElementById('loaderOverlay');
+        if (loader) loader.remove();
+    }, 800);
+});
+
+function generateQuiz(courseId, moduleIndex, lessonIndex) {
+    showLoader('Generating quiz...');
+    window.location.href = `/generate_lesson_quiz/${courseId}/${moduleIndex}/${lessonIndex}`;
+}
+</script>
+
+{% endblock %}

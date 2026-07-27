@@ -1,0 +1,353 @@
+{% extends "student/dashboard_base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Module Assessment - Short Answer Questions</h2>
+    
+    <div id="loading" class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Loading assessment questions...</p>
+    </div>
+    
+    <div id="saq-container" style="display: none;">
+        <div id="saq-info" class="alert alert-info">
+            <p><strong>Course:</strong> <span id="course-info"></span></p>
+            <p><strong>Module:</strong> <span id="module-info"></span></p>
+            <p class="mb-0">Answer the following questions thoughtfully. Your responses will be auto-graded by LLM, and you can request reevaluation if needed.</p>
+        </div>
+        
+        <div id="questions-container"></div>
+        
+        <div class="mt-4">
+            <button id="submit-btn" class="btn btn-primary btn-lg">Submit Answers</button>
+            <a href="/student_dashboard" class="btn btn-secondary btn-lg">Back to Dashboard</a>
+        </div>
+    </div>
+    
+    <div id="result-container" style="display: none;">
+        <div id="result-banner" class="alert alert-success">
+            <h4>Assessment Completed</h4>
+            <p>Your answers were reviewed by the LLM grader. You can request reevaluation if you are not satisfied with the result.</p>
+        </div>
+        
+        <div id="module-summary" class="alert alert-secondary" style="display: none;"></div>
+        <div id="result-details"></div>
+
+        <div id="reevaluation-container" class="mt-4" style="display: none;">
+            <div class="card p-3 mb-3 bg-light">
+                <h5 class="mb-3">Request Reevaluation</h5>
+                <div class="mb-3">
+                    <label for="reeval-reason" class="form-label">Why do you want a reevaluation?</label>
+                    <textarea id="reeval-reason" class="form-control" rows="4" placeholder="Explain your concerns or why you think the grade should be reviewed."></textarea>
+                </div>
+                <button id="reeval-submit-btn" class="btn btn-warning">Submit Reevaluation Request</button>
+                <div id="reeval-status" class="alert alert-info mt-3" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <a href="/student_dashboard" class="btn btn-primary">Back to Dashboard</a>
+        </div>
+    </div>
+    
+    <div id="error-container" class="alert alert-danger" style="display: none;">
+        <p id="error-message"></p>
+    </div>
+</div>
+
+<style>
+    .saq-block {
+        background-color: #f8f9fa;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        border-left: 4px solid #0d6efd;
+    }
+    
+    .saq-block h5 {
+        margin-bottom: 15px;
+        color: #0d6efd;
+    }
+    
+    .saq-block textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 3px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .rubric-info {
+        background-color: #e7f3ff;
+        padding: 10px;
+        border-radius: 3px;
+        margin-top: 10px;
+        font-size: 0.9em;
+    }
+</style>
+
+<script>
+    const courseId = {{ course_id }};
+    const moduleIndex = {{ module_index }};
+    let currentResponseIds = [];
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        loadAssessment();
+    });
+    
+    function loadAssessment() {
+        if (courseId == null || moduleIndex == null) {
+            showError('Invalid module assessment link.');
+            return;
+        }
+
+        loadExistingResults().then(hasResults => {
+            if (!hasResults) {
+                loadSAQs();
+            }
+        });
+    }
+
+    function loadSAQs() {
+        fetch(`/assessment/saq/${courseId}/${moduleIndex}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    displaySAQs(data.data);
+                } else {
+                    showError('Failed to load assessment questions');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Error loading assessment. Please try again.');
+            });
+    }
+    
+    function displaySAQs(saqData) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('saq-container').style.display = 'block';
+        
+        document.getElementById('course-info').textContent = `Course ${saqData.course_id}`;
+        document.getElementById('module-info').textContent = `Module ${saqData.module_index + 1}`;
+        
+        const questionsContainer = document.getElementById('questions-container');
+        questionsContainer.innerHTML = '';
+        
+        saqData.questions.forEach((question, index) => {
+            const saqBlock = document.createElement('div');
+            saqBlock.className = 'saq-block';
+            
+            let rubricHtml = '';
+            if (question.rubric && Object.keys(question.rubric).length > 0) {
+                rubricHtml = '<div class="rubric-info"><strong>Grading Rubric:</strong><ul>';
+                Object.entries(question.rubric).forEach(([key, value]) => {
+                    rubricHtml += `<li>${value}</li>`;
+                });
+                rubricHtml += '</ul></div>';
+            }
+            
+            saqBlock.innerHTML = `
+                <h5>Question ${index + 1}</h5>
+                <p><strong>${question.question}</strong></p>
+                <p style="font-size: 0.9em; color: #666;">Max Score: ${question.max_score}</p>
+                ${rubricHtml}
+                <textarea id="answer_${question.id}" placeholder="Type your answer here..." 
+                          rows="6" required></textarea>
+            `;
+            
+            questionsContainer.appendChild(saqBlock);
+        });
+    }
+
+    function loadExistingResults() {
+        return fetch(`/assessment/saq/result/${courseId}/${moduleIndex}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success' && data.data.length > 0) {
+                    document.getElementById('loading').style.display = 'none';
+                    displayResultData(data.data, data.module_summary);
+                    return true;
+                }
+                return false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                return false;
+            });
+    }
+    
+    document.getElementById('submit-btn').addEventListener('click', function() {
+        submitSAQs();
+    });
+    
+    function submitSAQs() {
+        const questions = document.querySelectorAll('[id^="answer_"]');
+        const responses = [];
+        let allAnswered = true;
+        
+        questions.forEach(textarea => {
+            const answerId = textarea.id.replace('answer_', '');
+            const answerText = textarea.value.trim();
+            
+            if (!answerText) {
+                allAnswered = false;
+            } else {
+                responses.push({
+                    saq_id: parseInt(answerId),
+                    answer_text: answerText
+                });
+            }
+        });
+        
+        if (!allAnswered) {
+            showError('Please answer all questions before submitting');
+            return;
+        }
+        
+        const payload = {
+            course_id: parseInt(courseId),
+            module_index: parseInt(moduleIndex),
+            responses: responses
+        };
+
+        fetch('/assessment/saq/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                loadExistingResults().then(hasResults => {
+                    if (!hasResults) {
+                        showError('Submission succeeded, but no results were available yet.');
+                    }
+                });
+            } else {
+                console.error('Submission error:', data);
+                showError(data.error || 'Failed to submit answers');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('Error submitting answers. Please try again.');
+        });
+    }
+
+    function displayResultData(results, moduleSummary) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('saq-container').style.display = 'none';
+        document.getElementById('result-container').style.display = 'block';
+
+        currentResponseIds = results.map(r => r.id);
+        const resultDetails = document.getElementById('result-details');
+        resultDetails.innerHTML = '';
+
+        const moduleSummaryEl = document.getElementById('module-summary');
+        if (moduleSummary && moduleSummary.module_score_percentage !== null) {
+            moduleSummaryEl.style.display = 'block';
+            moduleSummaryEl.innerHTML = `
+                <h5>Module Score Summary</h5>
+                <p><strong>Lesson quiz average:</strong> ${moduleSummary.quiz_score_percentage !== null ? moduleSummary.quiz_score_percentage.toFixed(1) + '%' : 'Not available'}</p>
+                <p><strong>SAQ average:</strong> ${moduleSummary.saq_score_percentage !== null ? moduleSummary.saq_score_percentage.toFixed(1) + '%' : 'Not available'}</p>
+                <p><strong>Combined module score:</strong> ${moduleSummary.module_score_percentage.toFixed(1)}%</p>
+            `;
+        } else {
+            moduleSummaryEl.style.display = 'none';
+            moduleSummaryEl.innerHTML = '';
+        }
+
+        results.forEach((result, index) => {
+            const resultBlock = document.createElement('div');
+            resultBlock.className = 'saq-block';
+            
+            let reevaluationHtml = '';
+            if (result.reevaluation) {
+                reevaluationHtml = `
+                    <div class="alert alert-warning mt-3">
+                        <strong>Reevaluation status:</strong> ${result.reevaluation.status}<br>
+                        <strong>Reason:</strong> ${result.reevaluation.reason}
+                    </div>
+                `;
+            }
+
+            resultBlock.innerHTML = `
+                <h5>Question ${index + 1}</h5>
+                <p><strong>${result.question}</strong></p>
+                <p><strong>Your answer:</strong></p>
+                <p>${result.answer}</p>
+                <p><strong>LLM Score:</strong> ${result.score !== null ? result.score.toFixed(1) : 'Pending'} / ${result.max_score}</p>
+                <p><strong>Feedback:</strong> ${result.feedback || 'No feedback provided.'}</p>
+                ${reevaluationHtml}
+            `;
+            
+            resultDetails.appendChild(resultBlock);
+        });
+
+        const hasPendingOrReviewed = results.some(r => r.reevaluation && r.reevaluation.status === 'pending');
+        if (!hasPendingOrReviewed) {
+            document.getElementById('reevaluation-container').style.display = 'block';
+        } else {
+            document.getElementById('reevaluation-container').style.display = 'none';
+        }
+    }
+
+    document.getElementById('reeval-submit-btn').addEventListener('click', function() {
+        submitReevaluation();
+    });
+
+    function submitReevaluation() {
+        const reason = document.getElementById('reeval-reason').value.trim();
+        if (!reason) {
+            showError('Please provide a reason for reevaluation.');
+            return;
+        }
+
+        fetch('/assessment/saq/reevaluate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                response_ids: currentResponseIds,
+                reason: reason
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const statusBox = document.getElementById('reeval-status');
+                statusBox.style.display = 'block';
+                statusBox.textContent = 'Your reevaluation request has been submitted successfully.';
+                document.getElementById('reeval-reason').value = '';
+                document.getElementById('reevaluation-container').style.display = 'none';
+            } else {
+                console.error('Reevaluation error:', data);
+                showError(data.error || 'Failed to submit reevaluation request.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('Error submitting reevaluation request. Please try again.');
+        });
+    }
+
+    function displayResult() {
+        document.getElementById('saq-container').style.display = 'none';
+        document.getElementById('result-container').style.display = 'block';
+    }
+    
+    function showError(message) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('saq-container').style.display = 'none';
+        document.getElementById('result-container').style.display = 'none';
+        document.getElementById('error-container').style.display = 'block';
+        document.getElementById('error-message').textContent = message;
+    }
+</script>
+{% endblock %}

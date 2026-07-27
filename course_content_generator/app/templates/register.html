@@ -1,0 +1,87 @@
+{% include "header.html" %}
+
+<style>
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* background: linear-gradient(135deg, #1e3a8a, #2563eb); */
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 480px;
+    border-radius: 15px;
+}
+
+.auth-card .card-body {
+    padding: 40px;
+}
+</style>
+
+<div class="auth-wrapper">
+    <div class="card shadow auth-card">
+        <div class="card-body">
+
+            <h3 class="text-center mb-4">Create Account</h3>
+
+            <form action="{{ url_for('main.register')}}" method="POST">
+
+                <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="full_name" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Account Type</label>
+                    <select name="role" id="role-select" class="form-select">
+                        <option value="student" selected>Student</option>
+                        <option value="instructor">Instructor</option>
+                    </select>
+                </div>
+
+                <div class="mb-3" id="expertise-domain-group" style="display: none;">
+                    <label class="form-label">Instructor Field Area</label>
+                    <input type="text" name="expertise_domain" class="form-control" placeholder="e.g. Artificial Intelligence">
+                    <div class="form-text">This field helps match your reevaluation requests to your subject area.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" name="password_confirm" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                    Register
+                </button>
+
+            </form>
+
+            <p class="text-center mt-4 mb-0">
+                Already have an account?
+                <a href="/login">Login</a>
+            </p>
+
+            <script>
+                document.getElementById('role-select').addEventListener('change', function() {
+                    var expertiseGroup = document.getElementById('expertise-domain-group');
+                    expertiseGroup.style.display = this.value === 'instructor' ? 'block' : 'none';
+                });
+            </script>
+
+        </div>
+    </div>
+</div>
+
+{% include "footer.html" %}
