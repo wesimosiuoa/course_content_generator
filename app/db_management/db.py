@@ -6,6 +6,6 @@ def get_db_connection():
         user='root',
         password='',
         database='aicg',
-        port = 3306
+        port = 3307
     )
     return conn
